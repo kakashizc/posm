@@ -27,11 +27,11 @@ class Index extends Api
 
         $data['name'] = 'Tom';
         $data['age']  = '20';
-        $privEncrypt = $this->_rsa->privEncrypt(json_encode($data));
-        echo '私钥加密:'.$privEncrypt.'<br>';
-//
-        $publicDecrypt = $this->_rsa->publicDecrypt($privEncrypt);
-        echo '公钥解密:'.$publicDecrypt.'<br>';
+//        $privEncrypt = $this->_rsa->privEncrypt(json_encode($data));
+//        echo '私钥加密:'.$privEncrypt.'<br>';
+
+//        $publicDecrypt = $this->_rsa->publicDecrypt($privEncrypt);
+//        echo '公钥解密:'.$publicDecrypt.'<br>';
 
         $publicEncrypt = $this->_rsa->publicEncrypt(json_encode($data));
         echo '公钥加密:'.$publicEncrypt.'<br>';

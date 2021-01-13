@@ -74,6 +74,76 @@
             <input id="c-server_num" class="form-control" name="row[server_num]" type="number">
         </div>
     </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Qrcode')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-qrcode" class="form-control" name="row[qrcode]" type="text">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Indent_face_image')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <div class="input-group">
+                <input id="c-indent_face_image" class="form-control" size="50" name="row[indent_face_image]" type="text">
+                <div class="input-group-addon no-border no-padding">
+                    <span><button type="button" id="plupload-indent_face_image" class="btn btn-danger plupload" data-input-id="c-indent_face_image" data-mimetype="image/gif,image/jpeg,image/png,image/jpg,image/bmp" data-multiple="false" data-preview-id="p-indent_face_image"><i class="fa fa-upload"></i> {:__('Upload')}</button></span>
+                    <span><button type="button" id="fachoose-indent_face_image" class="btn btn-primary fachoose" data-input-id="c-indent_face_image" data-mimetype="image/*" data-multiple="false"><i class="fa fa-list"></i> {:__('Choose')}</button></span>
+                </div>
+                <span class="msg-box n-right" for="c-indent_face_image"></span>
+            </div>
+            <ul class="row list-inline plupload-preview" id="p-indent_face_image"></ul>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Indent_back_image')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <div class="input-group">
+                <input id="c-indent_back_image" class="form-control" size="50" name="row[indent_back_image]" type="text">
+                <div class="input-group-addon no-border no-padding">
+                    <span><button type="button" id="plupload-indent_back_image" class="btn btn-danger plupload" data-input-id="c-indent_back_image" data-mimetype="image/gif,image/jpeg,image/png,image/jpg,image/bmp" data-multiple="false" data-preview-id="p-indent_back_image"><i class="fa fa-upload"></i> {:__('Upload')}</button></span>
+                    <span><button type="button" id="fachoose-indent_back_image" class="btn btn-primary fachoose" data-input-id="c-indent_back_image" data-mimetype="image/*" data-multiple="false"><i class="fa fa-list"></i> {:__('Choose')}</button></span>
+                </div>
+                <span class="msg-box n-right" for="c-indent_back_image"></span>
+            </div>
+            <ul class="row list-inline plupload-preview" id="p-indent_back_image"></ul>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Indent_no')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-indent_no" class="form-control" name="row[indent_no]" type="text">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Indent_name')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-indent_name" class="form-control" name="row[indent_name]" type="text">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Recive_name')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-recive_name" class="form-control" name="row[recive_name]" type="text">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Recive_mobile')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-recive_mobile" class="form-control" name="row[recive_mobile]" type="text">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Recive_city')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <div class='control-relative'><input id="c-recive_city" class="form-control" data-toggle="city-picker" name="row[recive_city]" type="text"></div>
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Recive_address')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-recive_address" class="form-control" name="row[recive_address]" type="text">
+        </div>
+    </div>
     <div class="form-group layer-footer">
         <label class="control-label col-xs-12 col-sm-2"></label>
         <div class="col-xs-12 col-sm-8">

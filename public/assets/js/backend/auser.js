@@ -36,6 +36,15 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                         {field: 'pid', title: __('Pid')},
                         {field: 'ctime', title: __('Ctime'), operate:'RANGE', addclass:'datetimerange', formatter: Table.api.formatter.datetime},
                         {field: 'server_num', title: __('Server_num')},
+                        {field: 'qrcode', title: __('Qrcode')},
+                        {field: 'indent_face_image', title: __('Indent_face_image'), events: Table.api.events.image, formatter: Table.api.formatter.image},
+                        {field: 'indent_back_image', title: __('Indent_back_image'), events: Table.api.events.image, formatter: Table.api.formatter.image},
+                        {field: 'indent_no', title: __('Indent_no')},
+                        {field: 'indent_name', title: __('Indent_name')},
+                        {field: 'recive_name', title: __('Recive_name')},
+                        {field: 'recive_mobile', title: __('Recive_mobile')},
+                        {field: 'recive_city', title: __('Recive_city')},
+                        {field: 'recive_address', title: __('Recive_address')},
                         {field: 'operate', title: __('Operate'), table: table, events: Table.api.events.operate, formatter: Table.api.formatter.operate}
                     ]
                 ]

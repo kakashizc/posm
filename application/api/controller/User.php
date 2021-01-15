@@ -62,4 +62,62 @@ class User extends Api
         }
     }
 
+    /*
+     * 更换头像
+     * */
+    public function chead()
+    {
+        $imgstr = $this->request->param('img');
+        $up = Auser::where('id',$this->_uid)->update(['avatar'=>$imgstr]);
+        if ($up){
+            $this->success('成功',['img'=>IMG.$imgstr],'0');
+        }else{
+            $this->success('修改失败','','1');
+        }
+    }
+    /*
+     * 更换昵称
+     * */
+    public function chname()
+    {
+        $imgstr = $this->request->param('avatar');
+        $up = Auser::where('id',$this->_uid)->update(['avatar'=>$imgstr]);
+        if ($up){
+            $this->success('修改成功','','0');
+        }else{
+            $this->success('修改失败','','1');
+        }
+    }
+
+    /*
+     * 刷手,实名认证
+     * */
+    public function indent()
+    {
+        $up = [];
+        $up['indent_name'] = $this->request->param('indent_name');
+        $up['indent_no'] = $this->request->param('indent_no');
+        $up['indent_face_image'] = $this->request->param('front');
+        $up['indent_back_image'] = $this->request->param('back');
+        $up['status'] = '1';
+        $res = Auser::where('id',$this->_uid)->update($up);
+        if ($res){
+            $this->success('申请成功,等待审核','','0');
+        }else{
+            $this->success('提交失败','','1');
+        }
+    }
+    /*
+     * 查看实名认证状态
+     * */
+    public function indent_status()
+    {
+        $res = Auser::get(function ($query){
+            $query->where('id',$this->_uid)->field('status');
+        });
+        if (!$res){
+            $res['status'] = '4';
+        }
+        $this->success('成功',$res,'0');
+    }
 }

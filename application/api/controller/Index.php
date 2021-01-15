@@ -3,7 +3,11 @@
 namespace app\api\controller;
 
 use app\common\controller\Api;
-use PhpOffice\PhpSpreadsheet\IOFactory;
+use app\admin\model\Agoods;
+use fast\Http;
+use think\Db;
+use think\Request;
+use app\admin\model\Auser;
 /**
  * 首页接口
  */
@@ -16,6 +20,106 @@ class Index extends Api
     {
         parent::_initialize();
         $this->_rsa = new Rsa();
+    }
+    /*
+     * 获取机具
+     *
+     * */
+    public function goodList()
+    {
+        $list = Agoods::all(function ($query){
+            $query->where('status','1')->field("id,name,price,factory,type,concat('$this->img',image) as image");
+        });
+        if ($list){
+            $this->success('成功',$list,'0');
+        }else{
+            $this->success('无机具','','1');
+        }
+    }
+
+    /*
+     * 微信授权登录
+     * */
+    public function wxLogin()
+    {
+        $Appid = 'wx52e5b542351a721e';
+        $AppSecret = '4246ef6c39c8cc5bec01e14209f98c3b';
+
+        $code = $this->request->param("code");
+        $avatarUrl = $this->request->param("avatar");
+        $nickName = $this->request->param("name");
+        $pidstr = $this->request->param('pidstr');
+
+        if ($pidstr){
+            // 示例: pidstr=12
+            $pidstr = explode('=',$pidstr);
+            $pid = $pidstr[1];
+        }
+        $url = 'https://api.weixin.qq.com/sns/jscode2session?appid=' . $Appid . '&secret=' . $AppSecret . '&js_code=' . $code . '&grant_type=authorization_code';
+        $arr = Http::get($url);
+        //获取openid
+        $arr = json_decode($arr, true);
+
+        //获取当前的openid
+        $openId = $arr['openid'];
+        //进行查询
+        $personnel_find = Db::name('auser')->where("openid", $openId)->find();
+
+        if (!empty($personnel_find)) {
+
+            $payload = array('iss'=>'admin','iat'=>time(),'exp'=>time()+72000000000,'nbf'=>time(),'sub'=>'www.admin.com','uid'=>$personnel_find['id']);
+            $token = Jwt::getToken($payload);
+            $data = [
+                'token' => $token
+            ];
+            $this->success('登录成功', $data, '0');
+        } else {
+            //获取当前openId
+            $personnel_data['openid'] = $openId;
+            //获取当前昵称
+            $personnel_data['nickName'] = $nickName;
+            //获取当前头像
+            $personnel_data['avatar'] = $avatarUrl;
+            //设置上级
+            $personnel_data['pid'] = isset($pid)?:0;
+            //获取当前时间
+            $personnel_data['ctime'] = time();
+            //执行添加操作
+            $personnel_id = Db::name('auser')->insertGetId($personnel_data);
+            //进行查询
+            $personnel_find = Db::name('auser')->where('id', $personnel_id)->find();
+            $payload = array('iss'=>'admin','iat'=>time(),'exp'=>time()+72000000000,'nbf'=>time(),'sub'=>'www.admin.com','uid'=>$personnel_find['id']);
+            $token = Jwt::getToken($payload);
+            $data = [
+                'token' => $token
+            ];
+            $this->getCode($personnel_find['id']);
+            $this->success('登录成功', $data, '0');
+        }
+    }
+
+    /*
+     * 生成不重复的推荐码
+     * */
+    private function getCode($uid)
+    {
+        $user = Auser::get($uid);
+        if (!$user->code){
+            //生成code
+            $code =  mt_rand(10000,999999);
+            //查看生成的推荐码是否已存在
+            $is = Auser::where(['code'=>$code])->find();
+            if ($is){
+                $this->getCode($uid);
+            }else{
+                //如果没人用这个推荐码, 那么更新为当前用户的推荐码
+                $user->code = $code;
+                $user->save();
+                return  $code;
+            }
+        }else{
+            return $user->code;
+        }
     }
 
     /**
@@ -52,69 +156,4 @@ class Index extends Api
         echo '公钥解密:'.$publicDecrypt.'<br>';
     }
 
-    /*
-     * phpspreedsheet
-     * 可以是xlsx 或者 xls 其中一个类型
-     * */
-    public function importAdmin()
-    {
-        $file = $this->request->file('myfile');
-        if (!$file) $this->error('无数据');
-        //获取表格的大小，限制上传表格的大小5M
-        $file_size = $_FILES['myfile']['size'];
-        if ($file_size > 5 * 1024 * 1024) {
-            $this->error('文件大小不能超过5M');
-            exit();
-        }
-
-        //限制上传表格类型
-        $fileExtendName = substr(strrchr($_FILES['myfile']["name"], '.'), 1);
-        //application/vnd.ms-excel  为xls文件类型
-        if ($fileExtendName != 'xlsx') {
-            $this->error('必须为excel表格，且必须为xls格式！');
-            exit();
-        }
-
-        if (is_uploaded_file($_FILES['myfile']['tmp_name'])) {
-            // 有Xls和Xlsx格式两种
-            $objReader = IOFactory::createReader('Xlsx');
-
-            $filename = $_FILES['myfile']['tmp_name'];
-            $objPHPExcel = $objReader->load($filename);  //$filename可以是上传的表格，或者是指定的表格
-            $sheet = $objPHPExcel->getSheet(0);   //excel中的第一张sheet
-            $highestRow = $sheet->getHighestRow();       // 取得总行数
-            // $highestColumn = $sheet->getHighestColumn();   // 取得总列数
-
-            //定义$usersExits，循环表格的时候，找出已存在的用户。
-            $usersExits = [];
-            //循环读取excel表格，整合成数组。如果是不指定key的二维，就用$data[i][j]表示。
-            for ($j = 2; $j <= $highestRow; $j++) {
-                $data[$j - 2] = [
-                    'name' => $objPHPExcel->getActiveSheet()->getCell("A" . $j)->getValue(),
-                    'pass' => $objPHPExcel->getActiveSheet()->getCell("B" . $j)->getValue(),
-                    'ctime' => time()
-                ];
-                //看下用户名是否存在。将存在的用户名保存在数组里。
-                $userExist = db('aaa')->where('name', $data[$j - 2]['name'])->find();
-                if ($userExist) {
-                    array_push($usersExits, $data[$j - 2]['name']);
-                }
-            }
-
-            //如果有已存在的用户名，就不插入数据库了。
-            if ($usersExits != []) {
-                //把数组变成字符串，向前端输出。
-                $c = implode(" / ", $usersExits);
-                $this->error('Excel中以下用户名已存在:' . $c);
-                exit();
-            }
-
-            $res = db('aaa')->insertAll($data);
-            if ($res) {
-                $this->success('上传成功！', '', 0);
-            }
-        }else{
-            $this->error('失败','','1');
-        }
-    }
 }

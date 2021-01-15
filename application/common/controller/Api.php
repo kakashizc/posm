@@ -12,7 +12,24 @@ use think\Loader;
 use think\Request;
 use think\Response;
 use think\Route;
+use app\api\controller\Jwt;
+define('IMG','http://'.$_SERVER['SERVER_NAME']);
 
+//跨域
+$origin = isset($_SERVER['HTTP_ORIGIN'])? $_SERVER['HTTP_ORIGIN'] : '';
+$allow_origin = array(
+    'https://pos.zhoujiasong.top/'
+);
+if(in_array($origin, $allow_origin)){
+    header('Access-Control-Allow-Origin:'.$origin);
+}
+
+//option
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    //浏览器页面ajax跨域请求会请求2次，第一次会发送OPTIONS预请求,不进行处理，直接exit返回，但因为下次发送真正的请求头部有带token，所以这里设置允许下次请求头带token否者下次请求无法成功
+    header('Access-Control-Allow-Headers:x-requested-with,content-type,Authorization');
+    exit("ok");
+}
 /**
  * API控制器基类
  */
@@ -56,7 +73,7 @@ class Api
      * @var Auth
      */
     protected $auth = null;
-
+    protected $_token;
     /**
      * 默认响应输出类型,支持json/xml
      * @var string
@@ -125,6 +142,7 @@ class Api
         $path = str_replace('.', '/', $controllername) . '/' . $actionname;
         // 设置当前请求的URI
         $this->auth->setRequestUri($path);
+        $this->img = 'http://'.$_SERVER['SERVER_NAME'];
         // 检测是否需要验证登录
         if (!$this->auth->match($this->noNeedLogin)) {
             //初始化
@@ -167,7 +185,16 @@ class Api
         $name =  Loader::parseName($name);
         Lang::load(APP_PATH . $this->request->module() . '/lang/' . $this->request->langset() . '/' . str_replace('.', '/', $name) . '.php');
     }
+    protected function check_token($token)
+    {
+        $res = Jwt::verifyToken($token);
+        if (!$res) {
+            $this->error('token失效或过期 ,请重新登录!','','2');
+        }else{
+            $this->_token =($res);
 
+        }
+    }
     /**
      * 操作成功返回的数据
      * @param string $msg    提示信息

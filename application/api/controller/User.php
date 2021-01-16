@@ -37,6 +37,7 @@ class User extends Api
             $list->where('id',$uid);
         });
         if ($data){
+            $data['avatar'] = IMG.$data['avatar'];
             $this->success('获取成功',$data,'0');
         }else{
             $this->success('无数据','','1');
@@ -80,7 +81,7 @@ class User extends Api
      * */
     public function chname()
     {
-        $imgstr = $this->request->param('avatar');
+        $imgstr = $this->request->param('name');
         $up = Auser::where('id',$this->_uid)->update(['avatar'=>$imgstr]);
         if ($up){
             $this->success('修改成功','','0');

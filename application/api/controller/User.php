@@ -82,7 +82,7 @@ class User extends Api
     public function chname()
     {
         $imgstr = $this->request->param('name');
-        $up = Auser::where('id',$this->_uid)->update(['avatar'=>$imgstr]);
+        $up = Auser::where('id',$this->_uid)->update(['nickName'=>$imgstr]);
         if ($up){
             $this->success('修改成功','','0');
         }else{

@@ -151,4 +151,12 @@ class User extends Api
             $this->success('修改失败或用户不存在','','1');
         }
     }
+    /*
+     * 我的地址
+     * */
+    public function myadd()
+    {
+        $data = Auser::where('id',$this->_uid)->field('recive_name,recive_mobile,recive_city,recive_address')->find();
+        $this->success('成功',$data,'0');
+    }
 }

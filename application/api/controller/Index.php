@@ -2,6 +2,8 @@
 
 namespace app\api\controller;
 
+use app\admin\model\Notice;
+use app\admin\model\NoticeGg;
 use app\common\controller\Api;
 use app\admin\model\Agoods;
 use fast\Http;
@@ -121,4 +123,25 @@ class Index extends Api
             return $user->code;
         }
     }
+
+    /*
+     * 通知 / 公告
+     * */
+    public function notice()
+    {
+        $notice = Notice::all();
+        foreach ($notice  as $k => &$v){
+            $v['content'] = str_replace('src="', 'src="http://' . $_SERVER['HTTP_HOST'], $v['content']);
+        }
+        $gg = NoticeGg::all();
+        foreach ($gg  as $kk => &$vv){
+            $vv['content'] = str_replace('src="', 'src="http://' . $_SERVER['HTTP_HOST'], $vv['content']);
+        }
+        $ret = [
+            'tongzhi' => $notice,
+            'gonggao' => $gg
+        ];
+        $this->success('获取成功',$ret,'0');
+    }
+
 }

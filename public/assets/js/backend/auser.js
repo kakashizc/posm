@@ -29,7 +29,6 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                         {field: 'openid', title: __('Openid')},
                         {field: 'nickName', title: __('Nickname')},
                         {field: 'avatar', title: __('Avatar'), events: Table.api.events.image, formatter: Table.api.formatter.image},
-                        {field: 'name', title: __('Name')},
                         {field: 'money', title: __('Money'), operate:'BETWEEN'},
                         {field: 'total', title: __('Total'), operate:'BETWEEN'},
                         {field: 'code', title: __('Code')},
@@ -45,6 +44,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                         {field: 'recive_mobile', title: __('Recive_mobile')},
                         {field: 'recive_city', title: __('Recive_city')},
                         {field: 'recive_address', title: __('Recive_address')},
+                        {field: 'status', title: __('Status'), searchList: {"0":__('Status 0'),"1":__('Status 1'),"2":__('Status 2'),"3":__('Status 3')}, formatter: Table.api.formatter.status},
                         {field: 'operate', title: __('Operate'), table: table, events: Table.api.events.operate, formatter: Table.api.formatter.operate}
                     ]
                 ]

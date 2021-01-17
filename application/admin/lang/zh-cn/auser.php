@@ -5,7 +5,6 @@ return [
     'Openid'            => '微信识别号',
     'Nickname'          => '微信昵称',
     'Avatar'            => '头像',
-    'Name'              => '用户名称',
     'Money'             => '余额',
     'Total'             => '总收益',
     'Code'              => '邀请码',
@@ -20,5 +19,10 @@ return [
     'Recive_name'       => '收货人',
     'Recive_mobile'     => '收货联系电话',
     'Recive_city'       => '收货省市区',
-    'Recive_address'    => '收货具体地址'
+    'Recive_address'    => '收货具体地址',
+    'Status'            => '状态',
+    'Status 0'          => '未提交',
+    'Status 1'          => '未审核',
+    'Status 2'          => '审核通过',
+    'Status 3'          => '异常'
 ];

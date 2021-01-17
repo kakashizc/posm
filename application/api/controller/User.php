@@ -5,6 +5,7 @@ namespace app\api\controller;
 use app\common\controller\Api;
 use fast\Http;
 use think\Db;
+use think\Cache;
 use think\Request;
 use app\admin\model\Auser;
 /**
@@ -45,7 +46,7 @@ class User extends Api
     }
 
     /*
-     * 绑定手机号
+     * 绑定/修改 手机号
      * */
     public function bindm()
     {
@@ -53,13 +54,24 @@ class User extends Api
         if ( !$phone || !preg_match("/^1[345789]{1}\d{9}$/",$phone) ) {
             $this->success('缺少参数或手机号格式错误','','1');
         }
+
+        //验证手机短信验证码,暂时不用
+//        $msg = $this->request->request('msg');//短信验证码
+//        $cache_msg = Cache::get($phone);
+//        if ($msg != $cache_msg) {//如果验证码不正确,退出
+//            $this->success('短信验证码错误或者超时', '','2');
+//        }
+
         $user = Auser::get($this->_uid);
+        if (!$user){
+            $this->success('账号不存在','','1');
+        }
         $user->mobile = $phone;
         $res = $user->save();
         if ($res){
-            $this->success('绑定成功','','0');
+            $this->success('成功','','0');
         }else{
-            $this->success('绑定失败','','1');
+            $this->success('失败','','1');
         }
     }
 
@@ -120,5 +132,23 @@ class User extends Api
             $res['status'] = '4';
         }
         $this->success('成功',$res,'0');
+    }
+
+    /*
+     * 修改地址
+     * */
+    public function editAddress()
+    {
+        $up = [];
+        $up['recive_name'] = $this->request->param('recive_name');
+        $up['recive_mobile'] = $this->request->param('recive_mobile');
+        $up['recive_city'] = $this->request->param('recive_city');
+        $up['recive_address'] = $this->request->param('recive_address');
+        $res = Auser::where('id',$this->_uid)->update($up);
+        if ($res){
+            $this->success('修改成功','','0');
+        }else{
+            $this->success('修改失败或用户不存在','','1');
+        }
     }
 }

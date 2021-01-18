@@ -159,4 +159,29 @@ class User extends Api
         $data = Auser::where('id',$this->_uid)->field('recive_name,recive_mobile,recive_city,recive_address')->find();
         $this->success('成功',$data,'0');
     }
+
+    /*
+     * 生成我的二维码
+     * */
+    public function mycode()
+    {
+
+        $qrcode = new Qrcode();
+        $uid =  $this->_token['uid'];
+        $usercode = Db::name('auser')->where('id',$uid)->value('qrcode');
+        $ret = array();
+        if ($usercode){
+            $ret= array('qrcode'=>IMG.$usercode);
+            $this->success('成功',$ret,'0');
+        }
+        $img = $qrcode->get_qrcode($uid,1);
+        if (sizeof($img) >= 2){
+            $local_path = $img['local_path'];
+            Db::name('a_user')->where('id',$uid)->setField('qrcode',$local_path);
+            $ret['qrcode'] = $img['pname'];
+            $this->success('成功',$ret,'0');
+        }else{
+            $this->success('生成失败','','1');
+        }
+    }
 }

@@ -8,10 +8,10 @@ class Wxpay
     配置参数
     */
     private $config = array(
-        'appid' => "wx52e5b542351a721e",    /*微信开放平台上的应用id*/
+        'appid' => "wx7b2cb15c44985669",    /*微信开放平台上的应用id*/
         'mch_id' => "1486432172",   /*微信申请成功之后邮件中的商户id*/
         'api_key' => "xingchenwulianxingchenwulian8888",    /*在微信商户平台上自己设定的api密钥 32位*/
-        'notify_url' => 'http://wx.quanmingongjiang.com/api/back/wxBack' /*自定义的回调程序地址*/
+        'notify_url' => 'https://pos.zhoujiasong.top/api/Pay/back' /*自定义的回调程序地址*/
     );
 
     //下单

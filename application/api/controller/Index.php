@@ -29,9 +29,22 @@ class Index extends Api
      * */
     public function orders()
     {
-        $datas = AOrder::with(['agoods'])
+        $status = $this->request->param('status')??5;//订单状态:0=未付款,1=待发货,2=已发货,3=已收货,4=已失效,5=全部订单
+        if ($status != 5){
+            $where = ['order.status'=>$status];
+        }else{
+            $where = '';
+        }
+
+        $datas = collection(AOrder::with(['agoods'])
             ->where('u_id',1)
-            ->select();
+            ->where($where)
+            ->select())
+            ->toArray();
+
+        if ( !$datas ){
+            $this->success('无数据','','1');
+        }
         foreach ($datas as &$v){
             $v['agoods']['image'] = IMG. $v['agoods']['image'];
         }

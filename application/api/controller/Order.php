@@ -107,7 +107,19 @@ class Order extends Api
      * */
     public function orders()
     {
-        $datas = collection(AOrder::with(['agoods'])->where('u_id',$this->_uid)->select())->toArray();
+        $status = $this->request->param('status')??5;//订单状态:0=未付款,1=待发货,2=已发货,3=已收货,4=已失效,5=全部订单
+        if ($status != 5){
+            $where = ['status'=>$status];
+        }else{
+            $where = '';
+        }
+
+        $datas = collection(AOrder::with(['agoods'])
+            ->where('u_id',$this->_uid)
+            ->where($where)
+            ->select())
+            ->toArray();
+
         if ( !$datas ){
             $this->success('无数据','','1');
         }

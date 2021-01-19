@@ -168,10 +168,10 @@ class User extends Api
 
         $qrcode = new Qrcode();
         $uid =  $this->_token['uid'];
-        $usercode = Db::name('auser')->where('id',$uid)->value('qrcode');
+        $usercode = Db::name('auser')->find('id');
         $ret = array();
         if ($usercode){
-            $ret= array('qrcode'=>IMG.$usercode);
+            $ret= array('qrcode'=>IMG.$usercode['qrcode']);
             $this->success('成功',$ret,'0');
         }
         $img = $qrcode->get_qrcode($uid,1);
@@ -179,6 +179,7 @@ class User extends Api
             $local_path = $img['local_path'];
             Db::name('a_user')->where('id',$uid)->setField('qrcode',$local_path);
             $ret['qrcode'] = $img['pname'];
+            $ret['code'] = $usercode['code'];//我的邀请码
             $this->success('成功',$ret,'0');
         }else{
             $this->success('生成失败','','1');

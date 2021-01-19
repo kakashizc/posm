@@ -102,4 +102,18 @@ class Order extends Api
         }
     }
 
+    /*
+     * 用户获取全部订单
+     * */
+    public function orders()
+    {
+        $datas = collection(AOrder::with(['agoods'])->where('u_id',$this->_uid)->select())->toArray();
+        if ( !$datas ){
+            $this->success('无数据','','1');
+        }
+        foreach ($datas as &$v){
+            $v['agoods']['image'] = IMG. $v['agoods']['image'];
+        }
+        $this->success('成功',$datas,'0');
+    }
 }

@@ -10,6 +10,7 @@ use fast\Http;
 use think\Db;
 use think\Request;
 use app\admin\model\Auser;
+use app\admin\model\Order as AOrder;
 /**
  * 首页接口
  */
@@ -22,6 +23,19 @@ class Index extends Api
     {
         parent::_initialize();
         $this->_rsa = new Rsa();
+    }
+    /*
+     * 测试:用户获取全部订单
+     * */
+    public function orders()
+    {
+        $datas = AOrder::with(['agoods'])
+            ->where('u_id',1)
+            ->select();
+        foreach ($datas as &$v){
+            $v['agoods']['image'] = IMG. $v['agoods']['image'];
+        }
+        $this->success('成功',$datas,'0');
     }
     /*
      * 获取机具

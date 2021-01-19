@@ -168,7 +168,7 @@ class User extends Api
 
         $qrcode = new Qrcode();
         $uid =  $this->_token['uid'];
-        $usercode = Db::name('auser')->find('id');
+        $usercode = Db::name('auser')->find($uid);
         $ret = array();
         if ($usercode){
             $ret= array('qrcode'=>IMG.$usercode['qrcode']);

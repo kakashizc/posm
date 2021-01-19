@@ -76,6 +76,9 @@ class Order extends Api
         // 插入一条订单记录
         $goods_id = $this->request->param('goods_id');
         $num = (int)$this->request->param('num');
+        if (!$goods_id  || !$num){
+            $this->success('缺少参数','','1');
+        }
         $goodsInfo = Agoods::get($goods_id);
         if (!$goodsInfo) $this->success('无此商品','','1');
         $money = $goodsInfo->price * $num;

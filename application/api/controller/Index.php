@@ -25,7 +25,21 @@ class Index extends Api
         parent::_initialize();
         $this->_rsa = new Rsa();
     }
-
+    /*
+     * 获取机具
+     *
+     * */
+    public function goodList()
+    {
+        $list = Agoods::all(function ($query){
+            $query->where('status','1')->field("id,name,price,factory,type,concat('$this->img',image) as image");
+        });
+        if ($list){
+            $this->success('成功',$list,'0');
+        }else{
+            $this->success('无机具','','1');
+        }
+    }
     /*
      * 微信授权登录
      * */

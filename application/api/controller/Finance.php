@@ -12,6 +12,13 @@ namespace app\api\controller;
 use app\admin\model\Auser;
 use app\common\controller\Api;
 use think\Db;
+use app\admin\model\AgoodsSn;
+use app\admin\model\Notice;
+use app\admin\model\NoticeGg;
+use app\admin\model\Agoods;
+use fast\Http;
+use think\Request;
+use app\admin\model\Order as AOrder;
 /*
  * 财务相关记录数据
  * */
@@ -46,7 +53,7 @@ class Finance extends Api
             }
             return $item;
         });
-        if ($users){
+        if (sizeof($users) > 0){
             $this->success('成功',$users,'0');
         }else{
             $this->success('无下级人员','','1');
@@ -114,7 +121,7 @@ class Finance extends Api
     }
 
     /*
-     * 给下级划拨器具
+     * 给下级划拨机具
      * */
     public function give()
     {

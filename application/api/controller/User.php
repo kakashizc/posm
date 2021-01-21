@@ -170,7 +170,7 @@ class User extends Api
         $uid =  $this->_token['uid'];
         $usercode = Db::name('auser')->find($uid);
         $ret = array();
-        if ($usercode){
+        if ($usercode['qrcode'] != ''){
             $ret= array('qrcode'=>IMG.$usercode['qrcode']);
             $this->success('成功',$ret,'0');
         }

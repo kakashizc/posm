@@ -10,6 +10,7 @@ return [
     'Status 2'       => '已发货',
     'Status 3'       => '已收货',
     'Status 4'       => '已取消',
+    'Status 5'       => '已划拨',
     'Goods_id'       => '机具id',
     'Num'            => '购买机具数量',
     'Price'          => '机具单价',

@@ -74,6 +74,44 @@ class Teet extends Api
             });
         $this->success('',$datas);
     }
+    /*
+     * 待装机(下级购买了 pos机,待上级划拨)
+     * */
+    public function wait_set()
+    {
+        $uid = 0;
+        $son_ids = Auser::where('pid',$uid)->column('id');
+
+        //查找我的下级购买了pos机 但是未划拨的 用户id  (订单状态不等于 5 的, 也就是未划拨的我的下级用户id)
+        $order_sons = AOrder::where('u_id','IN',$son_ids)->where('status','NEQ','5')->column('u_id');
+
+        $users = Auser::all(function ($list) use ($order_sons){
+            $list->field('id,mobile,indent_name as name,avatar,ctime')->where('id','IN',$order_sons);
+        })->each(function ($item){
+            if ( substr($item['avatar'],0,3) != 'http' ){
+                $item['avatar'] = IMG.$item['avatar'];
+            }
+            return $item;
+        });
+        $this->success($users);
+    }
+
+    /*
+     * 我的下级人员列表
+     * */
+    public function son()
+    {
+        $uid = 0;
+        $users = Auser::all(function ($list) use ($uid){
+            $list->field('id,mobile,indent_name as name,avatar,ctime')->where('pid',$uid);
+        })->each(function ($item){
+            if ( substr($item['avatar'],0,3) != 'http' ){
+                $item['avatar'] = IMG.$item['avatar'];
+            }
+            return $item;
+        });
+        $this->success('',$users);
+    }
 
     /*
      * 获取机具

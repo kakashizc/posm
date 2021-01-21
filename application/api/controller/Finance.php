@@ -33,9 +33,64 @@ class Finance extends Api
     }
 
     /*
-     * 待签约(下级人员购买了pos机, 但是有pos机还没有激活 , 把这些用户列出来)
+     * 我的下级人员列表(app中的 通讯录)
      * */
     public function sons()
+    {
+        $uid = $this->_uid;
+        $users = Auser::all(function ($list) use ($uid){
+            $list->field('id,mobile,indent_name as name,avatar,ctime')->where('pid',$uid);
+        })->each(function ($item){
+            if ( substr($item['avatar'],0,3) != 'http' ){
+                $item['avatar'] = IMG.$item['avatar'];
+            }
+            return $item;
+        });
+        if ($users){
+            $this->success('成功',$users,'0');
+        }else{
+            $this->success('无下级人员','','1');
+        }
+    }
+
+    /*
+     * 某个直属下级的财务记录
+     * */
+    public function sons_detail()
+    {
+
+    }
+
+    /*
+     * 待装机(下级购买了 pos机,待上级划拨)
+     * */
+    public function wait_set()
+    {
+        $uid = $this->_uid;
+        $son_ids = Auser::where('pid',$uid)->column('id');
+
+        //查找我的下级购买了pos机 但是未划拨的 用户id  (订单状态不等于 5 的, 也就是未划拨的我的下级用户id)
+        $order_sons = AOrder::where('u_id','IN',$son_ids)->where('status','NEQ','5')->column('u_id');
+
+        $users = Auser::all(function ($list) use ($order_sons){
+            $list->field('id,mobile,indent_name as name,avatar,ctime')->where('id','IN',$order_sons);
+        })->each(function ($item){
+            if ( substr($item['avatar'],0,3) != 'http' ){
+                $item['avatar'] = IMG.$item['avatar'];
+            }
+            return $item;
+        });
+        if ($users){
+            $this->success('成功',$users,'0');
+        }else{
+            $this->success('无','','1');
+        }
+    }
+
+    /*
+     * 待签约(下级人员购买了pos机, 但是有pos机还没有激活 , 把这些用户列出来)
+     * */
+    public function wati_sign()
     {
         $uid = $this->_uid;
         $datas = Db::name('auser')
@@ -51,31 +106,11 @@ class Finance extends Api
                 }
                 return $item;
             });
-        $this->success('',$datas);
-    }
-
-    /*
-     * 某个直属下级的财务记录
-     * */
-    public function sons_detail()
-    {
-
-    }
-
-    /*
-     * 待装机(下级购买器具,待划拨)
-     * */
-    public function wait_set()
-    {
-
-    }
-
-    /*
-     * 待签约(我的下级 还没有购买机具)
-     * */
-    public function wati_sign()
-    {
-
+        if ($datas){
+            $this->success('成功',$datas,'0');
+        }else{
+            $this->success('无','','1');
+        }
     }
 
     /*

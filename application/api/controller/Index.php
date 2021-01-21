@@ -54,9 +54,7 @@ class Index extends Api
         $pidstr = $this->request->param('pidstr');
 
         if ($pidstr){
-            // 示例: pidstr=12
-            $pidstr = explode('=',$pidstr);
-            $pid = $pidstr[1];
+            $pid = $pidstr;
         }
         $url = 'https://api.weixin.qq.com/sns/jscode2session?appid=' . $Appid . '&secret=' . $AppSecret . '&js_code=' . $code . '&grant_type=authorization_code';
         $arr = Http::get($url);
@@ -84,7 +82,7 @@ class Index extends Api
             //获取当前头像
             $personnel_data['avatar'] = $avatarUrl;
             //设置上级
-            $personnel_data['pid'] = isset($pid)?:0;
+            $personnel_data['pid'] = isset($pid)?$pid:0;
             //获取当前时间
             $personnel_data['ctime'] = time();
             //执行添加操作

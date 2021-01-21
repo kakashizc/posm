@@ -177,7 +177,7 @@ class User extends Api
         $img = $qrcode->get_qrcode($uid,1);
         if (sizeof($img) >= 2){
             $local_path = $img['local_path'];
-            Db::name('a_user')->where('id',$uid)->setField('qrcode',$local_path);
+            Db::name('auser')->where('id',$uid)->setField('qrcode',$local_path);
             $ret['qrcode'] = $img['pname'];
             $ret['code'] = $usercode['code'];//我的邀请码
             $this->success('成功',$ret,'0');

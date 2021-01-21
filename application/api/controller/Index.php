@@ -2,6 +2,7 @@
 
 namespace app\api\controller;
 
+use app\admin\model\AgoodsSn;
 use app\admin\model\Notice;
 use app\admin\model\NoticeGg;
 use app\common\controller\Api;
@@ -23,47 +24,6 @@ class Index extends Api
     {
         parent::_initialize();
         $this->_rsa = new Rsa();
-    }
-    /*
-     * 测试:用户获取全部订单
-     * */
-    public function orders()
-    {
-        $status = $this->request->param('status')??5;//订单状态:0=未付款,1=待发货,2=已发货,3=已收货,4=已失效,5=全部订单
-        if ($status != 5){
-            $where = ['order.status'=>$status];
-        }else{
-            $where = '';
-        }
-
-        $datas = collection(AOrder::with(['agoods'])
-            ->where('u_id',1)
-            ->where($where)
-            ->select())
-            ->toArray();
-
-        if ( !$datas ){
-            $this->success('无数据','','1');
-        }
-        foreach ($datas as &$v){
-            $v['agoods']['image'] = IMG. $v['agoods']['image'];
-        }
-        $this->success('成功',$datas,'0');
-    }
-    /*
-     * 获取机具
-     *
-     * */
-    public function goodList()
-    {
-        $list = Agoods::all(function ($query){
-            $query->where('status','1')->field("id,name,price,factory,type,concat('$this->img',image) as image");
-        });
-        if ($list){
-            $this->success('成功',$list,'0');
-        }else{
-            $this->success('无机具','','1');
-        }
     }
 
     /*

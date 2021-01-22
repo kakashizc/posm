@@ -116,7 +116,7 @@ class Order extends Api
     {
         $status = $this->request->param('status')??5;//订单状态:0=未付款,1=待发货,2=已发货,3=已收货,4=已失效,5=全部订单
         if ($status != 5){
-            $where = ['status'=>$status];
+            $where = ['order.status'=>$status];
         }else{
             $where = '';
         }

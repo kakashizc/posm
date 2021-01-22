@@ -142,5 +142,13 @@ class Index extends Api
         ];
         $this->success('获取成功',$ret,'0');
     }
-
+    /*
+     * 关于我们
+     * */
+    public function us()
+    {
+        $data = Db::name('us')->find();
+        $data['content'] = str_replace('src="', 'src="http://' . $_SERVER['HTTP_HOST'], $data['content']);
+        $this->success('获取成功',$data,'0');
+    }
 }

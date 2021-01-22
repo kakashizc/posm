@@ -38,7 +38,7 @@ class User extends Api
             $list->where('id',$uid);
         });
         if ($data){
-            if ( substr($data['avatar'],0,3) != 'http' ){
+            if ( substr($data['avatar'],0,4) != 'http' ){
                 $data['avatar'] = IMG.$data['avatar'];
             }
             $this->success('获取成功',$data,'0');

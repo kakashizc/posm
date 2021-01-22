@@ -151,4 +151,19 @@ class Index extends Api
         $data['content'] = str_replace('src="', 'src="http://' . $_SERVER['HTTP_HOST'], $data['content']);
         $this->success('获取成功',$data,'0');
     }
+
+    /*
+     * 意见反馈
+     * */
+    public function fankui()
+    {
+        $data['cont'] = $this->request->param('cont');
+        $data['mobile'] = $this->request->param('mobile');
+        $res = Db::name('fankui')->insertGetId($data);
+        if ($res){
+            $this->success('反馈成功','','0');
+        }else{
+            $this->success('反馈失败','','1');
+        }
+    }
 }

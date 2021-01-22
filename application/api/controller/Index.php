@@ -32,7 +32,7 @@ class Index extends Api
     public function goodList()
     {
         $list = Agoods::all(function ($query){
-            $query->where('status','1')->field("id,name,price,factory,type,concat('$this->img',image) as image");
+            $query->where('status','1')->field("id,name,price,factory,type,concat('$this->img',image) as image,stock");
         });
         if ($list){
             $this->success('成功',$list,'0');

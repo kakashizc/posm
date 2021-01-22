@@ -14,6 +14,8 @@ use app\common\controller\Api;
 use app\common\controller\Wxpay;
 use app\admin\model\Auser;
 use app\admin\model\Order as AOrder;
+use think\Db;
+
 class Order extends Api
 {
     protected $noNeedLogin = '*';
@@ -96,7 +98,11 @@ class Order extends Api
         );
         $res = AOrder::create($insert);//保存预订单
         if ( $res ){
-            $this->success('购买成功','','0');
+            $data['order_no'] = $orderno;
+            $data['ctime'] = date('Y-m-d H:i:s',time());
+            //减少库存
+            $goodsInfo->setDec('stock',$num);
+            $this->success('购买成功',$data,'0');
         }else{
             $this->success('购买失败','','1');
         }

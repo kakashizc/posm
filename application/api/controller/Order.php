@@ -82,6 +82,7 @@ class Order extends Api
             $this->success('缺少参数','','1');
         }
         $goodsInfo = Agoods::get($goods_id);
+        if ($goodsInfo->stock < $num)$this->success('库存不足,请联系平台','','1');
         if (!$goodsInfo) $this->success('无此商品','','1');
         $money = $goodsInfo->price * $num;
         $uid = $this->_uid;//用户id

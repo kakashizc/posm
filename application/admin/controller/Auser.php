@@ -65,9 +65,15 @@ class Auser extends Backend
         $end = $this->request->param('end');//结束编号
         $id = $this->request->param('id');//用户id
         $good_id = $this->request->param('good_id');//机具id
-
+        if($start < $end){
+            $count = bcsub($end,$start);
+        }else{
+            $count = bcsub($start,$end);
+            $mid = $start;
+            $start = $end;
+            $end = $mid;
+        }
         //插入sn表,并绑定u_id
-        $count = bcsub($end ,$start);
         $time = time();
         for ($i=0;$i<=$count;$i++){
             if ($i == 0) {

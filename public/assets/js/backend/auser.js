@@ -45,7 +45,18 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                         {field: 'recive_city', title: __('Recive_city')},
                         {field: 'recive_address', title: __('Recive_address')},
                         {field: 'status', title: __('Status'), searchList: {"0":__('Status 0'),"1":__('Status 1'),"2":__('Status 2'),"3":__('Status 3')}, formatter: Table.api.formatter.status},
-                        {field: 'operate', title: __('Operate'), table: table, events: Table.api.events.operate, formatter: Table.api.formatter.operate}
+                        {field: 'operate', title: __('Operate'),
+                            buttons:[
+                                {
+                                    name: 'detail',
+                                    text: '划拨机具',
+                                    title: '划拨机具',
+                                    classname: 'btn btn-xs btn-success btn-dialog',
+                                    icon: 'fa fa-address-book-o',
+                                    url: 'Auser/mac'
+                                }
+                            ],
+                            table: table, events: Table.api.events.operate, formatter: Table.api.formatter.operate}
                     ]
                 ]
             });

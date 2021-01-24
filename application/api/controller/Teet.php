@@ -60,20 +60,19 @@ class Teet extends Api
     public function sons()
     {
         $uid = 0;
-        $datas = Db::name('auser')
-            ->alias('u')
-            ->join('agoods_sn s','s.ac_id = u.id')
-            ->where('u.pid',$uid)
-            ->where('s.status','=','0')
-            ->field("u.id,u.mobile,u.indent_name as name,FROM_UNIXTIME(u.ctime,'%Y-%m-%d %H:%i:%s') as ctime,u.avatar")
-            ->group('u.id')
-            ->select()->each(function($item){
-                if ( substr($item['avatar'],0,3) != 'http' ){
-                    $item['avatar'] = IMG.$item['avatar'];
-                }
-                return $item;
-            });
-        $this->success('',$datas);
+        $users = Auser::all(function ($list) use ($uid){
+            $list->field('id,mobile,indent_name as name,avatar,ctime,nickName')->where('pid',$uid);
+        })->each(function ($item){
+            if ( substr($item['avatar'],0,3) != 'http' ){
+                $item['avatar'] = IMG.$item['avatar'];
+            }
+            return $item;
+        });
+        if (sizeof($users) > 0){
+            $this->success('成功',$users,'0');
+        }else{
+            $this->success('无下级人员','','1');
+        }
     }
     /*
      * 待装机(下级购买了 pos机,待上级划拨)
@@ -84,7 +83,9 @@ class Teet extends Api
         $son_ids = Auser::where('pid',$uid)->column('id');
 
         //查找我的下级购买了pos机 但是未划拨的 用户id  (订单状态不等于 5 的, 也就是未划拨的我的下级用户id)
-        $order_sons = AOrder::where('u_id','IN',$son_ids)->where('status','NEQ','5')->column('u_id');
+        $order_sons = AOrder::where('u_id','IN',$son_ids)
+            ->where('status','IN',[1,2,3,4])
+            ->column('u_id');
 
         $users = Auser::all(function ($list) use ($order_sons){
             $list->field('id,mobile,indent_name as name,avatar,ctime')->where('id','IN',$order_sons);

@@ -19,6 +19,8 @@ use app\admin\model\Agoods;
 use fast\Http;
 use think\Request;
 use app\admin\model\Order as AOrder;
+use think\Exception;
+
 /*
  * 财务相关记录数据
  * */
@@ -73,20 +75,7 @@ class Finance extends Api
      * */
     public function wait_set()
     {
-        $uid = $this->_uid;
-        $son_ids = Auser::where('pid',$uid)->column('id');
-
-        //查找我的下级购买了pos机 但是未划拨的 用户id  (订单状态不等于 5 的, 也就是未划拨的我的下级用户id)
-        $order_sons = AOrder::where('u_id','IN',$son_ids)->where('status','NEQ','5')->column('u_id');
-
-        $users = Auser::all(function ($list) use ($order_sons){
-            $list->field('id,mobile,indent_name as name,avatar,ctime')->where('id','IN',$order_sons);
-        })->each(function ($item){
-            if ( substr($item['avatar'],0,3) != 'http' ){
-                $item['avatar'] = IMG.$item['avatar'];
-            }
-            return $item;
-        });
+        $users = self::son_ungive($this->_uid);
         if ($users){
             $this->success('成功',$users,'0');
         }else{
@@ -95,7 +84,7 @@ class Finance extends Api
     }
 
     /*
-     * 待签约(下级人员购买了pos机, 但是有pos机还没有激活 , 把这些用户列出来)
+     * 待签约(下级人员购买了pos机, 也划拨了, 但是有pos机还没有进行第一次刷卡未激活 , 把这些用户列出来)
      * */
     public function wati_sign()
     {
@@ -121,11 +110,81 @@ class Finance extends Api
     }
 
     /*
-     * 给下级划拨机具
+     * 给下级划拨机具 type = 1 , 2
+     * 1,区间划拨
+     * 2,选择某些机具sn码 进行划拨
      * */
     public function give()
     {
+        $hid = $this->request->param('hid');//被划拨人id
+        $type = $this->request->param('type');
+        Db::startTrans();
+        $time = time();
+        try{
+            if ($type == 1){ //区间划拨
+                $start = $this->request->param('start');
+                $end = $this->request->param('end');
+                $count = bcsub($end,$start);
+                //插入sn表,并绑定u_id
+                    for ($i=0;$i<=$count;$i++){
+                        if ($i == 0) {
+                            $sn = $start;
+                        }elseif ($i == $count){
+                            $sn = $end;
+                        }else{
+                            $sn = bcadd( $start,"$i");
+                        }
+                        $up['u_id'] = $hid;
+                        $up['ctime'] = $time;
+                        $res = Db::name('agoods_sn')->where('sn',$sn)->update($up);
+                    }
+                    if ($res){
+                        //插入一条划拨机具的记录
+                        self::insert_rec(1);
+                        Db::commit();
+                        $this->success('划拨成功','','0');
+                    }else{
+                        Db::rollback();
+                        $this->error("划拨失败",'','1');
+                    }
 
+            }else{//固定的sn号码划拨
+                $sn_arr = $this->request->param('sn_arr');//选中机具sn的数组
+                //更新sn表,并绑定新的u_id
+                $time = time();
+                foreach ($sn_arr as $k=>$v){
+                    $up['u_id'] = $hid;
+                    $up['ctime'] = $time;
+                    $res = Db::name('agoods_sn')->where('sn',$v)->update($up);
+                }
+                if ($res){
+                    //插入一条划拨机具的记录
+                    self::insert_rec(2);
+                    Db::commit();
+                    $this->success('划拨成功','','0');
+                }else{
+                    Db::rollback();
+                    $this->error("划拨失败",'','1');
+                }
+            }
+        }catch (Exception $exception){
+            Db::rollback();
+            $this->success('失败:'.$exception->getMessage(),'','1');
+        }
+    }
+
+    /*
+    * 给下级划拨之前,查找我已经拥有的sn码
+    * */
+    public function my_sn()
+    {
+        $uid = $this->_uid;
+        $data = AgoodsSn::where(['u_id'=>$uid,'status'=>'0'])->column('sn');
+        if (sizeof($data) > 0){
+            $this->success('成功',$data,'0');
+        }else{
+            $this->success('无数据,请联系平台购买,划拨','','1');
+        }
     }
 
     /*
@@ -142,6 +201,61 @@ class Finance extends Api
     public function findpos()
     {
 
+    }
+
+    /*
+     * 我的下级  购买未划拨机具的人员列表
+     * */
+    private static function son_ungive($uid)
+    {
+
+        $son_ids = Auser::where('pid',$uid)->column('id');
+
+        //查找我的下级购买了pos机 但是未划拨的 用户id  (订单状态不等于 5 的, 也就是未划拨的我的下级用户id)
+        $order_sons = AOrder::where('u_id','IN',$son_ids)->where('status','NEQ','5')->column('u_id');
+
+        $users = Auser::all(function ($list) use ($order_sons){
+            $list->field('id,mobile,indent_name as name,avatar,ctime')->where('id','IN',$order_sons);
+        })->each(function ($item){
+            if ( substr($item['avatar'],0,3) != 'http' ){
+                $item['avatar'] = IMG.$item['avatar'];
+            }
+            return $item;
+        });
+        if (sizeof($users) > 0){
+            return $users;
+        }else{
+            return false;
+        }
+    }
+
+
+    /*
+     * 插入一条机具记录
+     * type = 1 区间划拨
+     * type = 2 选中划拨
+     * */
+    private function insert_rec($type)
+    {
+        $hid = $this->request->param('hid');//被划拨人id
+        if ($type == 1){//区间划拨
+            $rec['op_id'] = $this->_uid;
+            $rec['time'] = time();
+            $rec['start'] = $this->request->param('start');
+            $rec['end'] = $this->request->param('end');
+            $rec['uid'] = $hid;
+            Db::name('agoods_sn_record')->insert($rec);
+        }else{//选中划拨
+            $rec['op_id'] = $this->_uid;
+            $rec['time'] = time();
+            $str = '';
+            foreach ($this->request->param('sn_arr') as $k=>$v){
+                $str = $str .'/'. $v;
+            }
+            $rec['no'] = $str;
+            $rec['uid'] = $hid;
+            Db::name('agoods_sn_record')->insert($rec);
+        }
     }
 }
 

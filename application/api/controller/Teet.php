@@ -27,6 +27,7 @@ class Teet extends Api
 {
     protected $noNeedLogin = ['*'];
     protected $noNeedRight = ['*'];
+
     /*
      * 测试:用户获取全部订单
      * */

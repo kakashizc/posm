@@ -4,6 +4,7 @@ namespace app\admin\controller;
 
 use app\common\controller\Backend;
 use app\admin\model\Agoods;
+use app\admin\model\AgoodsSn;
 use think\Db;
 use think\Exception;
 
@@ -81,8 +82,14 @@ class Auser extends Backend
             }elseif ($i == $count){
                 $data[$i]['sn'] = $end;
             }else{
-                $data[$i]['sn'] =bcadd( $start,"$i");
+                $data[$i]['sn'] = bcadd( $start,"$i");
             }
+            //查询是否已存在的sn号
+            $is = AgoodsSn::get(['sn'=>$data[$i]['sn']]);
+            if ($is){
+                $this->error($data[$i]['sn'].'---此sn号已存在, 请核实后再划拨');
+            }
+            $data[$i]['sn'];
             $data[$i]['good_id'] = $good_id;
             $data[$i]['u_id'] = $id;
             $data[$i]['ctime'] = $time;

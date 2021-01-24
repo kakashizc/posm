@@ -137,7 +137,12 @@ class Finance extends Api
             if ($type == 1){ //区间划拨
                 $start = $this->request->param('start');
                 $end = $this->request->param('end');
-                $count = bcsub($end,$start);
+                if ($start == $end){
+                    //选择了一个终端
+                    $count = 0;
+                }else{
+                    $count = bcsub($end,$start);
+                }
                 //插入sn表,并绑定u_id
                     for ($i=0;$i<=$count;$i++){
                         if ($i == 0) {

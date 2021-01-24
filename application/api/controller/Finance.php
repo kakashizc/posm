@@ -50,7 +50,7 @@ class Finance extends Api
         $users = Auser::all(function ($list) use ($uid){
             $list->field('id,mobile,indent_name as name,avatar,ctime,nickName')->where('pid',$uid);
         })->each(function ($item){
-            if ( substr($item['avatar'],0,3) != 'http' ){
+            if ( substr($item['avatar'],0,4) != 'http' ){
                 $item['avatar'] = IMG.$item['avatar'];
             }
             return $item;
@@ -97,7 +97,7 @@ class Finance extends Api
             ->field("u.id,u.mobile,u.indent_name as name,FROM_UNIXTIME(u.ctime,'%Y-%m-%d %H:%i:%s') as ctime,u.avatar")
             ->group('u.id')
             ->select()->each(function($item){
-                if ( substr($item['avatar'],0,3) != 'http' ){
+                if ( substr($item['avatar'],0,4) != 'http' ){
                     $item['avatar'] = IMG.$item['avatar'];
                 }
                 return $item;
@@ -217,7 +217,7 @@ class Finance extends Api
         $users = Auser::all(function ($list) use ($order_sons){
             $list->field('id,mobile,indent_name as name,avatar,ctime')->where('id','IN',$order_sons);
         })->each(function ($item){
-            if ( substr($item['avatar'],0,3) != 'http' ){
+            if ( substr($item['avatar'],0,4) != 'http' ){
                 $item['avatar'] = IMG.$item['avatar'];
             }
             return $item;

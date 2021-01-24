@@ -244,9 +244,9 @@ class Finance extends Api
         }else{
             if ( preg_match("/^1[345789]{1}\d{9}$/",$select) ) {
                 //根据手机号查询
-                $where = ['mobile',$select];
+                $where = ['mobile'=>$select];
             }else{
-                $where = ['indent_name',$select];
+                $where = ['indent_name'=>$select];
             }
             $son_id = Auser::where($where)->value('id');
             if (!$son_id){

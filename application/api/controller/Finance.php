@@ -82,6 +82,19 @@ class Finance extends Api
             $this->success('无','','1');
         }
     }
+    /*
+     * 待装机,根据手机号/名字 单个搜索(下级购买了 pos机,待上级划拨)
+     * */
+    public function wait_set_sel()
+    {
+        $select = $this->request->param('select');
+        $users = self::son_ungive($this->_uid,$select);
+        if ($users){
+            $this->success('成功',$users,'0');
+        }else{
+            $this->success('无','','1');
+        }
+    }
 
     /*
      * 待签约(下级人员购买了pos机, 也划拨了, 但是有pos机还没有进行第一次刷卡未激活 , 把这些用户列出来)
@@ -206,27 +219,55 @@ class Finance extends Api
     /*
      * 我的下级  购买未划拨机具的人员列表
      * */
-    private static function son_ungive($uid)
+    private static function son_ungive($uid,$select='')
     {
 
-        $son_ids = Auser::where('pid',$uid)->column('id');
+        if ($select == ''){
+            $son_ids = Auser::where('pid',$uid)->column('id');
 
-        //查找我的下级购买了pos机 但是未划拨的 用户id  (订单状态不等于 5 的, 也就是未划拨的我的下级用户id)
-        $order_sons = AOrder::where('u_id','IN',$son_ids)->where('status','IN',[1,2,3,4])->column('u_id');
+            //查找我的下级购买了pos机 但是未划拨的 用户id  (订单状态不等于 5 的, 也就是未划拨的我的下级用户id)
+            $order_sons = AOrder::where('u_id','IN',$son_ids)->where('status','IN',[1,2,3,4])->column('u_id');
 
-        $users = Auser::all(function ($list) use ($order_sons){
-            $list->field('id,mobile,indent_name as name,avatar,ctime')->where('id','IN',$order_sons);
-        })->each(function ($item){
-            if ( substr($item['avatar'],0,4) != 'http' ){
-                $item['avatar'] = IMG.$item['avatar'];
+            $users = Auser::all(function ($list) use ($order_sons){
+                $list->field('id,mobile,indent_name as name,avatar,ctime')->where('id','IN',$order_sons);
+            })->each(function ($item){
+                if ( substr($item['avatar'],0,4) != 'http' ){
+                    $item['avatar'] = IMG.$item['avatar'];
+                }
+                return $item;
+            });
+            if (sizeof($users) > 0){
+                return $users;
+            }else{
+                return false;
             }
-            return $item;
-        });
-        if (sizeof($users) > 0){
-            return $users;
         }else{
-            return false;
+            if ( preg_match("/^1[345789]{1}\d{9}$/",$select) ) {
+                //根据手机号查询
+                $where = ['mobile',$select];
+            }else{
+                $where = ['indent_name',$select];
+            }
+            $son_id = Auser::where($where)->value('id');
+            if (!$son_id){
+                return false;
+            }
+            //查找我的下级购买了pos机 但是未划拨的 用户id  (订单状态不等于 5 的, 也就是未划拨的我的下级用户id)
+            $order_son = AOrder::where('u_id','EQ',$son_id)->where('status','IN',[1,2,3,4])->value('u_id');
+            if (!$order_son){
+                return false;
+            }
+            $users = Auser::all(function ($list) use ($order_son){
+                $list->field('id,mobile,indent_name as name,avatar,ctime')->where('id','eq',$order_son);
+            })->each(function ($item){
+                if ( substr($item['avatar'],0,4) != 'http' ){
+                    $item['avatar'] = IMG.$item['avatar'];
+                }
+                return $item;
+            });
+            return $users;
         }
+
     }
 
 

@@ -162,7 +162,8 @@ class Finance extends Api
                     }
 
             }else{//固定的sn号码划拨
-                $sn_arr = $this->request->param('sn_arr');//选中机具sn的数组
+                $sn_str = $this->request->param('sn_arr');//选中机具sn的数组
+                $sn_arr = explode(',',$sn_str);
                 //更新sn表,并绑定新的u_id
                 $time = time();
                 foreach ($sn_arr as $k=>$v){
@@ -289,11 +290,7 @@ class Finance extends Api
         }else{//选中划拨
             $rec['op_id'] = $this->_uid;
             $rec['time'] = time();
-            $str = '';
-            foreach ($this->request->param('sn_arr') as $k=>$v){
-                $str = $str .'/'. $v;
-            }
-            $rec['no'] = $str;
+            $rec['no'] = $this->request->param('sn_arr');
             $rec['uid'] = $hid;
             Db::name('agoods_sn_record')->insert($rec);
         }

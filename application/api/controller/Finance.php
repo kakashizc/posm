@@ -247,13 +247,19 @@ class Finance extends Api
     public function inrec_one()
     {
         $sn = $this->request->param('sn');
-        $uid = $this->_uid;
+        $where = "FIND_IN_SET('$sn',no)";
         $data = Db::name('agoods_sn_record')
-            ->alias('r')
-            ->join('auser u','u.id = r.op_id')
-            ->where('r.u_id',$uid)
-            ->field("u.indent_name as name , r.no , FROM_UNIXTIME(r.time,'%Y-%m-%d %H:%i:%s') as ctime")
+            ->where($where)
             ->find();
+        if ($data){
+            $parent = Auser::get($data['op_id']);
+            $ret['name'] = $parent->indent_name;
+            $ret['sn'] = $sn;
+            $ret['time'] = date('Y-m-d H:i:s',$data['time']);
+            $this->success('成功',$ret,'0');
+        }else{
+            $this->success('无此sn号',[],'1');
+        }
 
     }
 

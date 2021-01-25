@@ -103,7 +103,8 @@ class Auser extends Backend
                 $rec['time'] = time();
                 $rec['start'] = $start;
                 $rec['end'] = $end;
-                $rec['uid'] = $id;
+                $rec['u_id'] = $id;
+                $rec['no'] = start_end_tostr($start,$end);
                 $rec['goods_id'] = $good_id;
                 Db::name('agoods_sn_record')->insert($rec);
                 Db::commit();

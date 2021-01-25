@@ -208,18 +208,75 @@ class Finance extends Api
 
     /*
      * 入库记录
+     * 获取我的pos机 划拨记录
      * */
     public function inrec()
     {
+        $uid = $this->_uid;
+        $data = Db::name('agoods_sn_record')
+            ->alias('r')
+            ->join('auser u','u.id = r.op_id')
+            ->where('r.u_id',$uid)
+            ->field("u.indent_name as name , r.no , FROM_UNIXTIME(r.time,'%Y-%m-%d %H:%i:%s') as ctime")
+            ->select()->each(function ($item) {
+                $arr = explode(',',$item['no']);
+                foreach ($arr as $k=>$v){
+                    $item[$k]['sn'] = $v;
+                    $item[$k]['time'] = $item['ctime'];
+                    $item[$k]['name'] = $item['name'];
+                }
+                unset($item['name']);
+                unset($item['no']);
+                unset($item['ctime']);
+                return $item;
+            });
+        $arr = [];
+        foreach ($data as $k=>$v){
+            $arr = array_merge($arr,$v);
+        }
+        if (sizeof($data) > 0){
+
+            $this->success('成功',($arr),'0');
+        }else{
+            $this->success('无数据,请联系平台购买,划拨','','1');
+        }
+    }
+    /*
+     * 入库记录,单个sn号码查询
+     * */
+    public function inrec_one()
+    {
+        $sn = $this->request->param('sn');
+        $uid = $this->_uid;
+        $data = Db::name('agoods_sn_record')
+            ->alias('r')
+            ->join('auser u','u.id = r.op_id')
+            ->where('r.u_id',$uid)
+            ->field("u.indent_name as name , r.no , FROM_UNIXTIME(r.time,'%Y-%m-%d %H:%i:%s') as ctime")
+            ->find();
 
     }
 
     /*
      * 机具查询
+     * 查询我名下所有的pos机器, 包括 未激活 已激活的
      * */
     public function findpos()
     {
-
+        $uid = $this->_uid;
+        $status = $this->request->param('status');
+        $arr = [0,1,2];
+        if ($status){
+            $arr = [1,2];
+        }
+        $data = AgoodsSn::all(function ($list) use ($uid,$arr){
+            $list->where('u_id',$uid)->whereIN('status',$arr)->field('sn,status');
+        });
+        if (sizeof($data) > 0){
+            $this->success('成功',$data,'0');
+        }else{
+            $this->success('无数据,请联系平台购买,划拨','','1');
+        }
     }
 
     /*
@@ -290,13 +347,14 @@ class Finance extends Api
             $rec['time'] = time();
             $rec['start'] = $this->request->param('start');
             $rec['end'] = $this->request->param('end');
-            $rec['uid'] = $hid;
+            $rec['no'] = start_end_tostr($rec['start'] ,$rec['end']);
+            $rec['u_id'] = $hid;
             Db::name('agoods_sn_record')->insert($rec);
         }else{//选中划拨
             $rec['op_id'] = $this->_uid;
             $rec['time'] = time();
             $rec['no'] = $this->request->param('sn_arr');
-            $rec['uid'] = $hid;
+            $rec['u_id'] = $hid;
             Db::name('agoods_sn_record')->insert($rec);
         }
     }

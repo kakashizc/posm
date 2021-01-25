@@ -27,7 +27,37 @@ class Teet extends Api
 {
     protected $noNeedLogin = ['*'];
     protected $noNeedRight = ['*'];
+    public function inrec()
+    {
+        $uid = 3;
+        $data = Db::name('agoods_sn_record')
+            ->alias('r')
+            ->join('auser u','u.id = r.op_id')
+            ->where('r.u_id',$uid)
+            ->field("u.indent_name as name , r.no , FROM_UNIXTIME(r.time,'%Y-%m-%d %H:%i:%s') as ctime")
+            ->select()->each(function ($item) {
+                $arr = explode(',',$item['no']);
+                foreach ($arr as $k=>$v){
+                    $item[$k]['sn'] = $v;
+                    $item[$k]['time'] = $item['ctime'];
+                    $item[$k]['name'] = $item['name'];
+                }
+                unset($item['name']);
+                unset($item['no']);
+                unset($item['ctime']);
+                return $item;
+            });
+        $arr = [];
+        foreach ($data as $k=>$v){
+            $arr = array_merge($arr,$v);
+        }
+        if (sizeof($data) > 0){
 
+            $this->success('成功',($arr),'0');
+        }else{
+            $this->success('无数据,请联系平台购买,划拨','','1');
+        }
+    }
     /*
      * 测试:用户获取全部订单
      * */
@@ -72,6 +102,30 @@ class Teet extends Api
             $this->success('成功',$users,'0');
         }else{
             $this->success('无下级人员','','1');
+        }
+    }
+    /*
+    * 机具查询
+    * 查询我名下所有的pos机器, 包括 未激活 已激活的
+    * */
+    public function findpos()
+    {
+        $uid = 3;
+        $status = $this->request->param('status');
+        if ($status == 0 && $status != null){
+            $arr = [0];
+        }elseif($status == 1){
+            $arr = [1,2];
+        }else{
+            $arr = [0,1,2];
+        }
+        $data = AgoodsSn::all(function ($list) use ($uid,$arr){
+            $list->where('u_id',$uid)->whereIN('status',$arr)->field('sn,status');
+        });
+        if (sizeof($data) > 0){
+            $this->success('成功',$data,'0');
+        }else{
+            $this->success('无数据,请联系平台购买,划拨','','1');
         }
     }
     /*

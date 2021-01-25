@@ -25,6 +25,30 @@ if (!function_exists('__')) {
     }
 }
 
+//机具sn号, 把输入的sn号码, 从起始编号 到 结束编号, 用 , 号连接成字符串
+function start_end_tostr($start, $end)
+{
+    if($start < $end){
+        $count = bcsub($end,$start);
+    }else{
+        $count = bcsub($start,$end);
+        $mid = $start;
+        $start = $end;
+        $end = $mid;
+    }
+    $str = '';
+    for ($i=0;$i<=$count;$i++){
+        if ($i == 0) {
+            $sn = $start;
+        }elseif ($i == $count){
+            $sn = $end;
+        }else{
+            $sn = bcadd( $start,"$i");
+        }
+        $str = $str.','.$sn;
+    }
+    return ltrim($str,',');
+}
 if (!function_exists('format_bytes')) {
 
     /**

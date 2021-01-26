@@ -271,9 +271,15 @@ class Finance extends Api
     {
         $uid = $this->_uid;
         $status = $this->request->param('status');
-        $arr = [0,1,2];
-        if ($status){
+        if (!$status){
+            $this->success('缺少参数','','1');
+        }
+        if ($status == 1){
             $arr = [1,2];
+        }elseif ($status == 0){
+            $arr = [0];
+        }else{
+            $arr = [0,1,2];
         }
         $data = AgoodsSn::all(function ($list) use ($uid,$arr){
             $list->where('u_id',$uid)->whereIN('status',$arr)->field('sn,status');

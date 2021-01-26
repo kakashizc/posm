@@ -82,12 +82,11 @@ class Teet extends Api
     {
         $uid = 3;
         $status = $this->request->param('status');
-        if ($status == 0 && $status != null){
-            $arr = [0];
-        }elseif($status == 1){
+        $arr = [0,1,2];
+        if ($status == 1){
             $arr = [1,2];
-        }else{
-            $arr = [0,1,2];
+        }elseif ($status == 0){
+            $arr = [0];
         }
         $data = AgoodsSn::all(function ($list) use ($uid,$arr){
             $list->where('u_id',$uid)->whereIN('status',$arr)->field('sn,status');

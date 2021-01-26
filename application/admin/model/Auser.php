@@ -56,5 +56,8 @@ class Auser extends Model
         return $value === '' ? null : ($value && !is_numeric($value) ? strtotime($value) : $value);
     }
 
-
+    public function level()
+    {
+        return $this->belongsTo('Level', 'level_id', 'id', [], 'LEFT')->setEagerlyType(0);
+    }
 }

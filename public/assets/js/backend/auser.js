@@ -27,6 +27,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                         {field: 'id', title: __('Id')},
                         {field: 'mobile', title: __('Mobile')},
                         {field: 'openid', title: __('Openid')},
+                        {field: 'level.name', title: '等级'},
                         {field: 'nickName', title: __('Nickname')},
                         {field: 'avatar', title: __('Avatar'), events: Table.api.events.image, formatter: Table.api.formatter.image},
                         {field: 'money', title: __('Money'), operate:'BETWEEN'},

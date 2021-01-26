@@ -271,7 +271,7 @@ class Finance extends Api
     {
         $uid = $this->_uid;
         $status = $this->request->param('status');
-        if (!$status){
+        if ($status == null){
             $this->success('缺少参数','','1');
         }
         if ($status == 1){

@@ -66,6 +66,36 @@ class Finance extends Api
             $this->success('无下级人员','','1');
         }
     }
+    /*
+     * 查询我的下级人员信息
+     * */
+    public function select_son()
+    {
+        $uid = $this->_uid;
+        $keywords = $this->request->param('words');
+        if ( preg_match("/^1[345789]{1}\d{9}$/",$keywords) ) {
+            //根据手机号查询
+            $where = ['mobile'=>$keywords];
+        }else{
+            $where = ['indent_name'=>$keywords];
+        }
+        $users = Auser::get(function ($list) use ($uid,$where){
+            $list->field('id,mobile,indent_name as name,avatar,ctime,nickName,level_id')
+                ->where($where)
+                ->where('pid',$uid);
+        });
+        $users['money'] = Feed::where('date_m',date('Y-m',time()))->sum('money');
+        $users['sons'] = Auser::where( ['pid'=>$users['id']] )->count('id');
+        $users['vip'] = Level::where( ['id'=>$users['level_id']] )->value('name');
+        if ( substr($users['avatar'],0,4) != 'http' ){
+            $users['avatar'] = IMG.$users['avatar'];
+        }
+        if ($users > 0){
+            $this->success('成功',$users,'0');
+        }else{
+            $this->success('无下级人员','','1');
+        }
+    }
 
     /*
      * 某个直属下级的财务记录

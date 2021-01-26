@@ -10,6 +10,7 @@ namespace app\api\controller;
 
 
 use app\admin\model\Auser;
+use app\admin\model\Level;
 use app\common\controller\Api;
 use think\Db;
 use app\admin\model\AgoodsSn;
@@ -49,10 +50,11 @@ class Finance extends Api
     {
         $uid = $this->_uid;
         $users = Auser::all(function ($list) use ($uid){
-            $list->field('id,mobile,indent_name as name,avatar,ctime,nickName')->where('pid',$uid);
+            $list->field('id,mobile,indent_name as name,avatar,ctime,nickName,level_id')->where('pid',$uid);
         })->each(function ($item){
             $item['money'] = Feed::where('date_m',date('Y-m',time()))->sum('money');
             $item['sons'] = Auser::where( ['pid'=>$item['id']] )->count('id');
+            $item['vip'] = Level::where( ['id'=>$item['level_id']] )->value('name');
             if ( substr($item['avatar'],0,4) != 'http' ){
                 $item['avatar'] = IMG.$item['avatar'];
             }

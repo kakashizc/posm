@@ -20,6 +20,7 @@ use fast\Http;
 use think\Request;
 use app\admin\model\Order as AOrder;
 use think\Exception;
+use app\admin\model\Feed;
 
 /*
  * 财务相关记录数据
@@ -50,6 +51,9 @@ class Finance extends Api
         $users = Auser::all(function ($list) use ($uid){
             $list->field('id,mobile,indent_name as name,avatar,ctime,nickName')->where('pid',$uid);
         })->each(function ($item){
+            $item['money'] = Feed::all(function($user){
+                $user->where('date_m',date('Y-m',time()))->sum('money');
+            });
             if ( substr($item['avatar'],0,4) != 'http' ){
                 $item['avatar'] = IMG.$item['avatar'];
             }

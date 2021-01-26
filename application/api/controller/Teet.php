@@ -19,7 +19,7 @@ use think\Db;
 use think\Request;
 use app\admin\model\Auser;
 use app\admin\model\Order as AOrder;
-
+use app\admin\model\Feed;
 /*
  * 测试类
  * */
@@ -59,11 +59,13 @@ class Teet extends Api
     * */
     public function sons()
     {
-        $uid = 0;
+        $uid = 3;
         $users = Auser::all(function ($list) use ($uid){
             $list->field('id,mobile,indent_name as name,avatar,ctime,nickName')->where('pid',$uid);
         })->each(function ($item){
-            if ( substr($item['avatar'],0,3) != 'http' ){
+            $item['money'] = Feed::where('date_m',date('Y-m',time()))->sum('money');
+            $item['sons'] = Auser::where( ['pid'=>$item['id']] )->count('id');
+            if ( substr($item['avatar'],0,4) != 'http' ){
                 $item['avatar'] = IMG.$item['avatar'];
             }
             return $item;

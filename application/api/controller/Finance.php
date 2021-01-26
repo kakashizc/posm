@@ -51,9 +51,8 @@ class Finance extends Api
         $users = Auser::all(function ($list) use ($uid){
             $list->field('id,mobile,indent_name as name,avatar,ctime,nickName')->where('pid',$uid);
         })->each(function ($item){
-            $item['money'] = Feed::all(function($user){
-                $user->where('date_m',date('Y-m',time()))->sum('money');
-            });
+            $item['money'] = Feed::where('date_m',date('Y-m',time()))->sum('money');
+            $item['sons'] = Auser::where( ['pid'=>$item['id']] )->count('id');
             if ( substr($item['avatar'],0,4) != 'http' ){
                 $item['avatar'] = IMG.$item['avatar'];
             }

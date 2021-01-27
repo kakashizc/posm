@@ -100,11 +100,35 @@ class Finance extends Api
     }
 
     /*
-     * 某个直属下级的财务记录
+     * 余额明细
      * */
-    public function sons_detail()
+    public function feed_detail()
     {
-
+        $uid = $this->_uid;
+        $month = $this->request->param('month');
+        $page = $this->request->param('page')??1;
+        $num = $this->request->param('num')??5;
+        // 用户总余额, 总返佣收益 , 总刷卡收益   余额明细单
+        $yue = Auser::get($uid);
+        if (!$yue)$this->success('无此用户','','1');
+        $data['money'] = $yue->money;
+        $data['back'] = Feed::where('u_id',$uid)->where('status','1')->sum('money');
+        $data['card'] = Feed::where('u_id',$uid)->where('status','2')->sum('money');
+        $data['record'] = Feed::with(['sons'=>function($list)use($uid,$month,$page,$num){
+            if(!$month){
+                $where = [];
+            }else{
+                $where = ['date_m'=>$month];
+            }
+            $list->where(['u_id'=>$uid])->where($where);
+        }])->page($page,$num)->select()->each(function ($item){
+            if ( substr($item['sons']['avatar'],0,4) != 'http' ){
+                $item['sons']['avatar'] = IMG.$item['sons']['avatar'];
+            }
+            //下级信息
+            return $item;
+        });
+        $this->success('成功',$data,'0');
     }
 
     /*

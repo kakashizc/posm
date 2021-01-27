@@ -61,4 +61,9 @@ class Feed extends Model
     {
         return $this->belongsTo('Auser', 'u_id', 'id', [], 'LEFT')->setEagerlyType(0);
     }
+
+    public function sons()
+    {
+        return $this->belongsTo('Auser', 'card_id', 'id', [], 'LEFT')->setEagerlyType(0);
+    }
 }

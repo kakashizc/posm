@@ -2,6 +2,7 @@
 
 namespace app\admin\model;
 
+use think\Db;
 use think\Model;
 
 
@@ -59,5 +60,32 @@ class Auser extends Model
     public function level()
     {
         return $this->belongsTo('Level', 'level_id', 'id', [], 'LEFT')->setEagerlyType(0);
+    }
+
+    /*
+     * 查找当前用户交易额
+     * @param int $uid   用户id
+     * @param int $type  类型 1-日交易额 2-月交易额
+     * */
+    public static function trade($uid,$type)
+    {
+        switch ($type){
+            case '1'://查询日交易额
+                $stime = strtotime(date("Y-m-d"),time()); //今天开始时间戳
+                $etime = $stime + 3600*24;//今天结束时间戳
+                $money = Db::name('sn_record')
+                    ->whereTime('time',[$stime,$etime])
+                    ->where('u_id',$uid)
+                    ->sum('money');
+                break;
+            case '2'://查询月交易额
+                $this_month = date('Y-m',time());
+                $money = Db::name('sn_record')
+                    ->where('date',$this_month)
+                    ->where('u_id',$uid)
+                    ->sum('money');
+                break;
+        }
+        return $money;
     }
 }

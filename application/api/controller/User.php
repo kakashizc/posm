@@ -41,6 +41,9 @@ class User extends Api
             if ( substr($data['avatar'],0,4) != 'http' ){
                 $data['avatar'] = IMG.$data['avatar'];
             }
+            //查找当前用户的日交易额, 和 月交易额
+            $data['day_trade'] = Auser::trade($uid,1)??0;
+            $data['month_trade'] = Auser::trade($uid,2)??0;
             $this->success('获取成功',$data,'0');
         }else{
             $this->success('无数据','','1');

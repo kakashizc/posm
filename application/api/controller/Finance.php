@@ -84,6 +84,7 @@ class Finance extends Api
                 ->where($where)
                 ->where('pid',$uid);
         });
+        if (!$users) $this->success('无此人','','1');
         $users['money'] = Feed::where('date_m',date('Y-m',time()))->sum('money');
         $users['sons'] = Auser::where( ['pid'=>$users->id] )->count('id');
         $users['vip'] = Level::where( ['id'=>$users->level_id] )->value('name');
@@ -91,7 +92,8 @@ class Finance extends Api
             $users->avatar = IMG.$users->avatar;
         }
         if ($users){
-            $this->success('成功',$users,'0');
+            $data[0] = $users;
+            $this->success('成功',$data,'0');
         }else{
             $this->success('无下级人员','','1');
         }

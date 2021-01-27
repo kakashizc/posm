@@ -25,6 +25,20 @@ class Index extends Api
         parent::_initialize();
         $this->_rsa = new Rsa();
     }
+
+    /*
+     * 客服电话
+     * */
+    public function kefu()
+    {
+        $kefu = Db::name('kefu')->find();
+        if ($kefu){
+            $this->success('成功',$kefu,'0');
+        }else{
+            $this->success('无','','1');
+        }
+    }
+
     /*
      * 获取机具
      *

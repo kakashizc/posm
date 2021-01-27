@@ -85,12 +85,12 @@ class Finance extends Api
                 ->where('pid',$uid);
         });
         $users['money'] = Feed::where('date_m',date('Y-m',time()))->sum('money');
-        $users['sons'] = Auser::where( ['pid'=>$users['id']] )->count('id');
-        $users['vip'] = Level::where( ['id'=>$users['level_id']] )->value('name');
-        if ( substr($users['avatar'],0,4) != 'http' ){
-            $users['avatar'] = IMG.$users['avatar'];
+        $users['sons'] = Auser::where( ['pid'=>$users->id] )->count('id');
+        $users['vip'] = Level::where( ['id'=>$users->level_id] )->value('name');
+        if ( substr($users->avatar,0,4) != 'http' ){
+            $users->avatar = IMG.$users->avatar;
         }
-        if ($users > 0){
+        if ($users){
             $this->success('成功',$users,'0');
         }else{
             $this->success('无下级人员','','1');

@@ -269,7 +269,7 @@ class Finance extends Api
 
     /*
      * 入库记录
-     * 获取我的pos机 划拨记录
+     * 获取我的pos机 上级给我划拨机具的记录
      * */
     public function inrec()
     {

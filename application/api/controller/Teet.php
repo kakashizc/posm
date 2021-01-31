@@ -27,6 +27,38 @@ class Teet extends Api
 {
     protected $noNeedLogin = ['*'];
     protected $noNeedRight = ['*'];
+    public function inrec()
+    {
+        $uid = 12;
+        $data = Db::name('agoods_sn_record')
+            ->alias('r')
+            ->join('auser u','u.id = r.op_id')
+            ->where('r.u_id',$uid)
+            ->field("u.indent_name as name , r.no , FROM_UNIXTIME(r.time,'%Y-%m-%d %H:%i:%s') as ctime")
+            ->select()->each(function ($item) {
+                $arr = explode(',',$item['no']);
+                foreach ($arr as $k=>$v){
+                    $item[$k]['sn'] = $v;
+                    $item[$k]['time'] = $item['ctime'];
+                    $item[$k]['name'] = $item['name'];
+                }
+                unset($item['name']);
+                unset($item['no']);
+                unset($item['ctime']);
+                return $item;
+            });
+        $arr = [];
+        foreach ($data as $k=>$v){
+            $arr = array_merge($arr,$v);
+        }
+        if (sizeof($data) > 0){
+
+            $this->success('成功',($arr),'0');
+        }else{
+            $this->success('无数据,请联系平台购买,划拨','','1');
+        }
+    }
+
     /*
      * 测试:用户获取全部订单
      * */

@@ -59,6 +59,11 @@ class Finance extends Api
             if ( substr($item['avatar'],0,4) != 'http' ){
                 $item['avatar'] = IMG.$item['avatar'];
             }
+            if ( $item['ctime'] > strtotime(date("Y-m-d"),time()) ){
+                $item['new'] = '1';
+            }else{
+                $item['new'] = '0';
+            }
             return $item;
         });
         if (sizeof($users) > 0){
@@ -129,6 +134,51 @@ class Finance extends Api
             //下级信息
             return $item;
         });
+        $this->success('成功',$data,'0');
+    }
+    /*
+     * 今日收益
+     * */
+    public function today()
+    {
+        $uid = $this->_uid;
+        $date = $this->request->param('date')??'1';//根据日期查询 1-当天 7-近一周 30-本月 100-全部
+        $page = $this->request->param('page')??1;
+        $num = $this->request->param('num')??5;
+        switch ($date){
+            case '1':
+                $stime = $this->get_stime(1); //今天开始时间戳
+                break;
+            case '7':
+                $stime = $this->get_stime(7); //7天前的0点
+                break;
+            case '30':
+                $stime = $this->get_stime(30); //30天前的0点
+                break;
+            case '100':
+                $stime = '1609430400'; //2021-01-01 00:00:00
+                break;
+        }
+        $etime = time();//今天结束时间戳
+        //1,先查询总收益
+        $data['today_all'] = Feed::where('u_id',$uid)->whereTime('ctime',[$stime,$etime])->sum('money');
+        //2,查询每一条收益
+        $data['record'] = Feed::where(['u_id'=>$uid])->field('id,money,status,ctime')
+            ->whereTime('ctime',[$stime,$etime])
+            ->page($page,$num)
+            ->select();
+        if ( sizeof($data['record']) == 0){
+            $this->success('无数据','','1');
+        }
+
+        foreach ($data['record'] as  $k=>$v){
+            if ($v['status'] == 1){//收益类型,1=下级刷卡返现,2=本人刷卡收益
+                $data['fanxian'][] = $v;
+            }else{
+                $data['shuaka'][] = $v;
+            }
+        }
+        unset($data['record']);
         $this->success('成功',$data,'0');
     }
 
@@ -433,6 +483,21 @@ class Finance extends Api
             $rec['u_id'] = $hid;
             Db::name('agoods_sn_record')->insert($rec);
         }
+    }
+
+    /**
+     * get_some_day  获取n天前0点的时间戳
+     * @param int $some n天
+     * @param null $day 当前时间
+     * @return int|null
+     * @author:xjw129xjt(肖骏涛) xjt@ourstu.com
+     */
+    private function get_stime($some = 1, $day = null){
+        $time = $day ? $day : time();
+        $some_day = $time - 3600 * 24 * $some;
+        $btime = date('Y-m-d' . ' 00:00:00', $some_day);
+        $some_day = strtotime($btime);
+        return $some_day;
     }
 }
 

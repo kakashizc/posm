@@ -29,7 +29,7 @@ class Teet extends Api
     protected $noNeedRight = ['*'];
     public function inrec()
     {
-        $uid = 3;
+        $uid = 12;
         $data = Db::name('agoods_sn_record')
             ->alias('r')
             ->join('auser u','u.id = r.op_id')
@@ -60,10 +60,12 @@ class Teet extends Api
     }
     public function inrec_one()
     {
+        $uid = 12;
         $sn = $this->request->param('sn');
         $where = "FIND_IN_SET('$sn',no)";
         $data = Db::name('agoods_sn_record')
             ->where($where)
+            ->where('u_id',$uid)
             ->find();
         if ($data){
             $parent = Auser::get($data['op_id']);

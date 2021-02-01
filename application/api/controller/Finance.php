@@ -307,10 +307,12 @@ class Finance extends Api
      * */
     public function inrec_one()
     {
+        $uid = $this->_uid;
         $sn = $this->request->param('sn');
         $where = "FIND_IN_SET('$sn',no)";
         $data = Db::name('agoods_sn_record')
             ->where($where)
+            ->where('u_id',$uid)
             ->find();
         if ($data){
             $parent = Auser::get($data['op_id']);

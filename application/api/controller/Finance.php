@@ -55,6 +55,7 @@ class Finance extends Api
             $item['money'] = Feed::where('date_m',date('Y-m',time()))->sum('money');
             $item['sons'] = Auser::where( ['pid'=>$item['id']] )->count('id');
             $item['vip'] = Level::where( ['id'=>$item['level_id']] )->value('name');
+            if ($item['name'] == null) $item['name'] = $item['nickName'];
             if ( substr($item['avatar'],0,4) != 'http' ){
                 $item['avatar'] = IMG.$item['avatar'];
             }

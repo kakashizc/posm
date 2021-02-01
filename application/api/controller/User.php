@@ -2,6 +2,7 @@
 
 namespace app\api\controller;
 
+use app\admin\model\Level;
 use app\common\controller\Api;
 use fast\Http;
 use think\Db;
@@ -41,6 +42,7 @@ class User extends Api
             if ( substr($data['avatar'],0,4) != 'http' ){
                 $data['avatar'] = IMG.$data['avatar'];
             }
+            $data['vip'] = Level::where( ['id'=>$data['level_id']] )->value('name');
             //查找当前用户的日交易额, 和 月交易额
             $data['day_trade'] = Auser::trade($uid,1)??0;
             $data['month_trade'] = Auser::trade($uid,2)??0;

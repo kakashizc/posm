@@ -29,7 +29,7 @@ class Teet extends Api
     protected $noNeedRight = ['*'];
     public function inrec()
     {
-        $uid = 12;
+        $uid = 3;
         $data = Db::name('agoods_sn_record')
             ->alias('r')
             ->join('auser u','u.id = r.op_id')
@@ -57,6 +57,24 @@ class Teet extends Api
         }else{
             $this->success('无数据,请联系平台购买,划拨','','1');
         }
+    }
+    public function inrec_one()
+    {
+        $sn = $this->request->param('sn');
+        $where = "FIND_IN_SET('$sn',no)";
+        $data = Db::name('agoods_sn_record')
+            ->where($where)
+            ->find();
+        if ($data){
+            $parent = Auser::get($data['op_id']);
+            $ret['name'] = $parent->indent_name;
+            $ret['sn'] = $sn;
+            $ret['time'] = date('Y-m-d H:i:s',$data['time']);
+            $this->success('成功',$ret,'0');
+        }else{
+            $this->success('无此sn号',[],'1');
+        }
+
     }
 
     /*

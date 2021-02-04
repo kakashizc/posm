@@ -15,14 +15,16 @@ class Dpos extends Api
     protected $desKey;
 
     public $public_key;
-
+    private $key;
     private $shakey;
 
     public function __construct()
     {
         parent::__construct();
 
-        $this->iv = "";
+        $this->iv = "1234567-";
+
+        $this->key = '755d110bk03jrisn383hl3ns3desKeyPart1';
 
         $this->desKey = "k03jrisn383hl3ns";
 
@@ -90,10 +92,10 @@ class Dpos extends Api
      * 3des加密
      */
     public function encrypt($input){
-        $size = mcrypt_get_block_size(MCRYPT_3DES,MCRYPT_MODE_CBC);
+        $size = @mcrypt_get_block_size(MCRYPT_3DES,MCRYPT_MODE_CBC);
         $input = $this->pkcs5_pad($input, $size);
         $key = str_pad($this->key,24,'0');
-        $td = mcrypt_module_open(MCRYPT_3DES, '', MCRYPT_MODE_CBC, '');
+        $td = @mcrypt_module_open(MCRYPT_3DES, '', MCRYPT_MODE_CBC, '');
         if( $this->iv == '' )
         {
             $iv = @mcrypt_create_iv (mcrypt_enc_get_iv_size($td), MCRYPT_RAND);
@@ -103,9 +105,9 @@ class Dpos extends Api
             $iv = $this->iv;
         }
         @mcrypt_generic_init($td, $key, $iv);
-        $data = mcrypt_generic($td, $input);
-        mcrypt_generic_deinit($td);
-        mcrypt_module_close($td);
+        $data = @mcrypt_generic($td, $input);
+        @mcrypt_generic_deinit($td);
+        @mcrypt_module_close($td);
         $data = base64_encode($data);
         return $data;
     }
@@ -115,7 +117,7 @@ class Dpos extends Api
      */
     public function decrypt($encrypted, $key){
         $encrypted = strtr($encrypted, '-_', '+/');
-        $encrypted = base64_decode($encrypted);
+        $encrypted  = base64_decode($encrypted);
 
         $key = str_pad($key,24,'0');
 

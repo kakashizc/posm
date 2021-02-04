@@ -84,8 +84,8 @@ class Dposapi extends Api
      * */
     public function heart()
     {
-        $str = file_get_contents('php://input');
-        if($str == '123456'){
+        $arr = $this->des();
+        if($arr[0] == '123456'){
             $return['resultContent'] = '心跳连接成功';
             $return['resultCode'] = '0000';
             return json_encode($return,JSON_UNESCAPED_UNICODE);
@@ -144,6 +144,7 @@ class Dposapi extends Api
             return json_encode($return,JSON_UNESCAPED_UNICODE);
         }
         $deskey =  $randomkey.'3desKeyPart1';
+
         $data = $this->_Dpos->decrypt($arr['two'],$deskey);
         $dataarr = explode(',',$data);
         return $dataarr;

@@ -116,8 +116,11 @@ class Dpos extends Api
     public function decrypt($encrypted, $key){
         $encrypted = strtr($encrypted, '-_', '+/');
         $encrypted = base64_decode($encrypted);
+
         $key = str_pad($key,24,'0');
-        $td = mcrypt_module_open(MCRYPT_3DES,'',MCRYPT_MODE_CBC,'');
+
+        $td = @mcrypt_module_open(MCRYPT_3DES,'',MCRYPT_MODE_CBC,'');
+
         if( $this->iv == '' )
         {
             $iv = @mcrypt_create_iv (mcrypt_enc_get_iv_size($td), MCRYPT_RAND);
@@ -126,11 +129,12 @@ class Dpos extends Api
         {
             $iv = $this->iv;
         }
-        $ks = mcrypt_enc_get_key_size($td);
+
+        $ks = @mcrypt_enc_get_key_size($td);
         @mcrypt_generic_init($td, $key, $iv);
-        $decrypted = mdecrypt_generic($td, $encrypted);
-        mcrypt_generic_deinit($td);
-        mcrypt_module_close($td);
+        $decrypted = @mdecrypt_generic($td, $encrypted);
+        @mcrypt_generic_deinit($td);
+        @mcrypt_module_close($td);
         $y=$this->pkcs5_unpad($decrypted);
         return $y;
     }

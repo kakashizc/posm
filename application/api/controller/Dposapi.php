@@ -51,6 +51,7 @@ class Dposapi extends Api
             $user = AgoodsSn::get(['sn'=>$new['snNo']]);
             $insert['snNo'] = $new['snNo'];
             $insert['time'] = strtotime($new['transDate'].$new['transTime']);
+            $insert['ctime'] = time();//记录创建时间
             $insert['money'] = $new['transAmt'];
             $insert['u_id'] = $user->u_id??0;//机具所属用户id
             $insert['date'] = date('Y-m',$insert['time']);
@@ -135,6 +136,7 @@ class Dposapi extends Api
     private function des()
     {
         $str = file_get_contents('php://input');
+        @file_put_contents('1.txt',$str.'||'.time()."\n",FILE_APPEND);
         $arr = json_decode($str,1);
         //1,先对one 进行rsa 解密,获取 randomkey
         $randomkey = $this->_Dpos->decode($this->_Dpos->public_key,$arr['one']);

@@ -137,7 +137,7 @@ class Dposapi extends Api
     private function des()
     {
         $str = file_get_contents('php://input');
-        @file_put_contents('1.txt',$str.'||'.time()."\n",FILE_APPEND);
+        @file_put_contents('1.txt',$str.'||'.date('Y-m-d H:i:s',time())."\n",FILE_APPEND);
         $arr = json_decode($str,1);
         //1,先对one 进行rsa 解密,获取 randomkey
         $randomkey = $this->_Dpos->decode($this->_Dpos->public_key,$arr['one']);
@@ -147,7 +147,6 @@ class Dposapi extends Api
             return json_encode($return,JSON_UNESCAPED_UNICODE);
         }
         $deskey =  $randomkey.'3desKeyPart1';
-
         $data = $this->_Dpos->decrypt($arr['two'],$deskey);
         $dataarr = explode(',',$data);
         return $dataarr;

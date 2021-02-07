@@ -109,6 +109,7 @@ class Dposapi extends Api
             $dataarr = $this->des();
             foreach ($dataarr as $k=>$v){
                 $v = rtrim($v,'}');
+                $v = ltrim($v,'{');
                 $v = trim($v,'"');
                 $value = explode('":"',$v);
                 $new[$value[0]] = $value[1];

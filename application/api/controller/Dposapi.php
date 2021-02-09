@@ -77,10 +77,14 @@ class Dposapi extends Api
             $ret = Db::name('sn_record')->insertGetId($insert);
             //3, 返回code
             if ($ret){
-                $url = 'http://pos.com/api/Asyncapi/trade';
-                $insert['id'] = $ret;
-                Async::send($url,$insert);
-                return json_encode($return,JSON_UNESCAPED_UNICODE);
+                if ($insert['type'] == '2'){//如果不是信用卡,添加一条记录即可,不执行分销操作
+                    return json_encode($return,JSON_UNESCAPED_UNICODE);
+                }else{
+                    $url = 'http://pos.com/api/Asyncapi/trade';
+                    $insert['id'] = $ret;
+                    Async::send($url,$insert);
+                    return json_encode($return,JSON_UNESCAPED_UNICODE);
+                }
             }else{
                 $return['resultContent'] = '失败';
                 $return['resultCode'] = '9999';

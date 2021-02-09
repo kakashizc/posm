@@ -167,6 +167,16 @@ class Index extends Api
     }
 
     /*
+     * 注册协议
+     * */
+    public function xy()
+    {
+        $data = Db::name('xy')->find();
+        $data['content'] = str_replace('src="', 'src="http://' . $_SERVER['HTTP_HOST'], $data['content']);
+        $this->success('获取成功',$data,'0');
+    }
+
+    /*
      * 意见反馈
      * */
     public function fankui()

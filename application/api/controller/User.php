@@ -46,6 +46,8 @@ class User extends Api
             //查找当前用户的日交易额, 和 月交易额
             $data['day_trade'] = Auser::trade($uid,1)??0;
             $data['month_trade'] = Auser::trade($uid,2)??0;
+            //查找我的上级
+            $data['parent'] = Db::name('a_user')->where('id',$data['pid'])->field('mobile,indent_name')->find();
             $this->success('获取成功',$data,'0');
         }else{
             $this->success('无数据','','1');

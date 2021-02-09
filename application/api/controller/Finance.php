@@ -117,6 +117,10 @@ class Finance extends Api
         // 用户总余额, 总返佣收益 , 总刷卡收益   余额明细单
         $yue = Auser::get($uid);
         if (!$yue)$this->success('无此用户','','1');
+        //查询预计收益 1, 88元待返机具款 2, 活动营销奖励 连续5个月每个月交易额满3万元,第六个月给50元
+        $eight = $yue->reback==0?88:0;
+        $fifty = $yue->mprice==0?50:0;
+        $data['pre'] = $eight + $fifty;//预计收益
         $data['money'] = $yue->money;
         $data['back'] = Feed::where('u_id',$uid)->where('status','1')->sum('money');
         $data['card'] = Feed::where('u_id',$uid)->where('status','2')->sum('money');
@@ -500,6 +504,36 @@ class Finance extends Api
         $btime = date('Y-m-d' . ' 00:00:00', $some_day);
         $some_day = strtotime($btime);
         return $some_day;
+    }
+
+    /*
+     * 用户提现
+     * */
+    public function tixian()
+    {
+        $uid = $this->_uid;
+        $data = $this->request->param();
+        $user = Auser::get($uid);
+        if ($data['money'] > $user->money){
+            $this->success('余额不足','','1');
+        }
+        if ($data['money'] < 50 ){
+            $this->success('最低提现金额50元','','1');
+        }
+        Db::startTrans();
+        try{
+            //插入记录表
+            $data['createtime'] = time();
+            $data['money'] = $data['money'] - 3.00;//每笔提现手续费3元
+            Db::name('tixian')->insertGetId($data);
+            //减少用户余额
+            $user->setDec('money',$data['money']);
+            Db::commit();
+            $this->success('申请成功,已扣除每笔提现手续费3元','','0');
+        }catch(Exception $exception){
+            Db::rollback();
+            $this->success($exception->getMessage(),'','1');
+        }
     }
 }
 

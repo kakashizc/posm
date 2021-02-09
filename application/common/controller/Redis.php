@@ -20,6 +20,9 @@ class Redis
     private function __construct(){
         $this->redis = new \Redis();
         $this->redis->connect('127.0.0.1','6379');
+        if(config('redis.password') != ''){
+            $this->redis->auth(config('redis.password'));
+        }
     }
     //克隆方法私有化，防止复制实例
     private function __clone(){

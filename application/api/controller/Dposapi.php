@@ -9,20 +9,28 @@
 namespace app\api\controller;
 
 use app\admin\model\AgoodsSn;
+use app\admin\model\Feed;
 use app\common\controller\Api;
 use fast\Async;
 use think\Db;
 use think\Exception;
-
+use app\common\controller\Redis;
 class Dposapi extends Api
 {
     protected $noNeedLogin = ['*'];
     protected $noNeedRight = ['*'];
     private $_Dpos;
+    private $_Redis;
     public function __construct()
     {
         parent::__construct();
         $this->_Dpos = new Dpos();
+        $this->_Redis = Redis::getInstance()->getRedisConn();
+    }
+    public function ae()
+    {
+        $this->_Redis->lPush('index','ss');
+        dump($this->_Redis->rPop('index'));
     }
     /*
      * 实时交易数据推送
@@ -33,11 +41,10 @@ class Dposapi extends Api
         $return['resultCode'] = '0000';
         try{
             $dataarr = $this->des();
-            //可以把数组传给异步处理,然后直接返回 成功 剩下的业务逻辑让异步去做,但是我们先不用这样的方式了,并发数不大
-            //$url = 'http://pos.com/api/Asyncapi/trade';
-            //Async::send($url,$dataarr);return json_encode($return,JSON_UNESCAPED_UNICODE);
+
             foreach ($dataarr as $k=>$v){
                 $v = rtrim($v,'}');
+                $v = ltrim($v,'{');
                 $v = trim($v,'"');
                 $value = explode('":"',$v);
                 $new[$value[0]] = $value[1];
@@ -57,6 +64,7 @@ class Dposapi extends Api
             $insert['date'] = date('Y-m',$insert['time']);
             $insert['transDate'] = date('Y-m-d H:i:s',$insert['time']);
             $insert['agentNo'] = $new['agentNo'];
+            $insert['agentId'] = $new['agentId'];
             $insert['keyRsp'] = $new['keyRsp'];
             $insert['cardNo'] = $new['cardNo'];
             $insert['cardBankName'] = $new['cardBankName'];
@@ -64,19 +72,25 @@ class Dposapi extends Api
             $insert['fee'] = $new['fee'];
             $insert['memName'] = $new['memName'];
             $insert['memNo'] = $new['memNo'];
+            $insert['posEntry'] = $new['posEntry'];
             $insert['cardClass'] = $new['cardClass'];
-            $ret = Db::name('sn_record')->insert($insert);
+            $ret = Db::name('sn_record')->insertGetId($insert);
             //3, 返回code
             if ($ret){
+                $url = 'http://pos.com/api/Asyncapi/trade';
+                $insert['id'] = $ret;
+                Async::send($url,$insert);
                 return json_encode($return,JSON_UNESCAPED_UNICODE);
             }else{
                 $return['resultContent'] = '失败';
                 $return['resultCode'] = '9999';
+                @file_put_contents('trade.txt','交易接口调用失败---'.json_encode($dataarr).'||'.date('Y-m-d H:i:s',time())."\n",FILE_APPEND);
                 return json_encode($return,JSON_UNESCAPED_UNICODE);
             }
         }catch(Exception $exception){
             $return['resultContent'] = '失败';
             $return['resultCode'] = '9999';
+            @file_put_contents('trade.txt','交易接口调用失败---'.json_encode($dataarr).'||'.date('Y-m-d H:i:s',time())."\n",FILE_APPEND);
             return json_encode($return,JSON_UNESCAPED_UNICODE);
         }
     }
@@ -93,6 +107,7 @@ class Dposapi extends Api
         }else{
             $return['resultContent'] = '失败';
             $return['resultCode'] = '9999';
+            @file_put_contents('heart.txt','心跳失败'.'||'.date('Y-m-d H:i:s',time())."\n",FILE_APPEND);
             return json_encode($return,JSON_UNESCAPED_UNICODE);
         }
     }
@@ -118,21 +133,28 @@ class Dposapi extends Api
             $ret = Db::name('sn_bind')->insertGetId($new);
             //返回code
             if ($ret){
+                //可以把数组传给异步处理,然后直接返回 成功 剩下的业务逻辑让异步去做,但是我们先不用这样的方式了,并发数不大
+                $url = 'http://pos.com/api/Asyncapi/bind';//根据sn号,绑定用户
+                Async::send($url,$new);
                 return json_encode($return,JSON_UNESCAPED_UNICODE);
+
             }else{
                 $return['resultContent'] = '失败';
                 $return['resultCode'] = '9999';
+                @file_put_contents('bind.txt','绑定接口调用失败---'.json_encode($dataarr).'||'.date('Y-m-d H:i:s',time())."\n",FILE_APPEND);
                 return json_encode($return,JSON_UNESCAPED_UNICODE);
             }
         }catch(Exception $exception){
             $return['resultContent'] = '失败';
             $return['resultCode'] = '9999';
+            @file_put_contents('bind.txt','绑定接口调用失败---'.json_encode($dataarr).'||'.date('Y-m-d H:i:s',time())."\n",FILE_APPEND);
             return json_encode($return,JSON_UNESCAPED_UNICODE);
         }
     }
 
     /*
      * 统一解密
+     * @param $type int 类型 1-交易数据 2-绑定数据 3-心跳
      * */
     private function des()
     {

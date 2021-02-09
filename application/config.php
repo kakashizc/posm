@@ -223,6 +223,12 @@ return [
         'var_page'  => 'page',
         'list_rows' => 15,
     ],
+    //redis 配置
+    'redis'               => [
+        'host'     => '127.0.0.1',
+        'port'     => '6379',
+        'password' => '',
+    ],
     //验证码配置
     'captcha'                => [
         // 验证码字符集合

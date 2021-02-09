@@ -2,8 +2,8 @@
 /**
  * Created by jsong
  * User: Administrator
- * Date: 2021/2/3 0003
- * Time: 16:06
+ * Date: 2021/2/9 0009
+ * Time: 13:45
  */
 
 namespace app\api\controller;
@@ -14,47 +14,28 @@ use app\admin\model\Auser;
 use app\admin\model\Feed;
 use app\admin\model\Level;
 use app\common\controller\Api;
-use Monolog\Handler\IFTTTHandler;
-use think\Db;
 use think\Config;
+use think\Db;
 use think\Exception;
-use app\api\controller\Workday;
-class Asyncapi extends Api
+
+class Time extends Api
 {
     protected $noNeedLogin = ['*'];
     protected $noNeedRight = ['*'];
-
     /*
-     * TODO 1,显示预计收益 比如88元待返的钱
-     *      2,提现列表和接口 , 提现手续费, 每一笔3元
-     *      3,下级列表中展示每个下级发展下级的个数
-     *      4,展示上级信息
-     *      5,批量购买机具直接升级至对应的等级
-     *      6,一年内交易额不够,第二年直接 降级
-     *      7,撤回订单的交易处理
-     *      8,借记卡的判断,也存储一份 但是不算分润和业绩
-     *      9,注册协议加上
-     *      10,登录注册的短信验证
-     *      11,营销活动奖励->自终端激活次月起,5个月内每个月累计交易量满3万元，第六个月奖励乙方 50元/台/月
-     *
+     * 定时任务执行:
+     * 每天凌晨1点执行
+     * 查找所有时间戳 < 当前时间戳的 sn_record_bak记录表中的数据, 根据数据进行返佣金 / 升级/ 返88 等相关操作
      * */
-
-    /*
-    * 绑定终端
-    * */
-    public function bind()
+    public function index()
     {
-        set_time_limit(0);
-        ignore_user_abort(true);//设置与客户机断开是否会终止执行
-        $new = $this->request->param();
-        $goods = AgoodsSn::get(['sn'=>$new['snNo']]);
-        $is = AgoodsSn::get(['ac_id'=>$goods->u_id]);//如果当前用户已经绑定了一个ac_id,就不再绑定了,也就是一个用户一个pos机具
-        if (!$is){
-            //查找sn号码对应的记录, 绑定uid->ac_id,说明用户绑定了当前sn号为自己用的pos机器
-            $goods->ac_id = $goods->u_id;
-            $goods->save();
+        $all = Db::name('sn_record_bak')
+            ->where('ftime','<',time())
+            ->where('status','0')
+            ->select();
+        foreach ($all as $k => $v){
+            $this->trade($v);
         }
-        return false;
     }
 
     /*
@@ -62,11 +43,8 @@ class Asyncapi extends Api
      * @param $arr array 解密后的数组数据
      *
      * */
-    public function trade()
+    private function trade($arr)
     {
-        set_time_limit(0);
-        ignore_user_abort(true);//设置与客户机断开是否会终止执行
-        $arr = $this->request->param();
         /**
          * 90个工作日内, 刷够5000元, 返回给88元的机具采购费用(单笔或者多笔累计)
          * 手续费为万60的 才算入5000元累计内 支付方式 手续费为60的是: 刷卡 02 ,插卡 05
@@ -81,29 +59,7 @@ class Asyncapi extends Api
                 $count = 1;
             }
         }
-        /*
-         * 一,先查看是否为T0交易--立刻到账的交易,如果是的话, 立刻计算佣金等相关操作
-         *
-         * 二,如果是T1操作,1个工作日以后再进行计算收益
-         *
-         * */
-        $type = $arr['transType'];
-        $trade = Config::get("transType.$type");
-
-        if ($trade == 'D0'){
-            //说明已经到账了,立刻返给本人和上级收益
-            $this->back($arr,$count);
-
-        }elseif($trade == 'T1'){
-            //下一个工作日到账,所以先放入临时表中,定时任务执行下一个工作日再计算佣金
-            $work = new Workday();
-            $next_day = $work->abc(date('Y-m-d',time()));
-            //下一个工作日的23点可以得佣金
-            $next = $next_day + 3600*23;
-            $arr['ftime'] = $next;
-            unset($arr['id']);
-            Db::name('sn_record_bak')->insert($arr);
-        }
+        $this->back($arr,$count);
     }
 
     /*
@@ -122,13 +78,19 @@ class Asyncapi extends Api
             //2,返给上级佣金,同时给上级加上业绩
             $this->feed_record($user,$arr['money'],1);
             //3,更改记录为已返佣
-            Db::name('sn_record')->where('id',$arr['id'])->setField('status','1');
+            Db::name('sn_record_bak')->where('id',$arr['id'])->setField('status','1');
+            unset($arr['id']);
+            $arr['is_bak'] = 1;
+            $arr['bak_ftime'] = $arr['ftime'];
+            unset($arr['ftime']);
+            $arr['bak_ctime'] = time();
+            $arr['status'] = '1';
+            Db::name('sn_record')->insertGetId($arr);
             Db::commit();
         }catch(Exception $exception){
-            @file_put_contents('asyncapi.txt',$exception->getMessage().'||'.date('Y-m-d H:i:s',time())."\n",FILE_APPEND);
+            @file_put_contents('asyncapi_bak.txt',$exception->getMessage().'||'.date('Y-m-d H:i:s',time())."\n",FILE_APPEND);
             Db::rollback();
         }
-
     }
 
     /*
@@ -265,5 +227,4 @@ class Asyncapi extends Api
             $userinfo->save();
         }
     }
-
 }

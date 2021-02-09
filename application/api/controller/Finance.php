@@ -310,7 +310,9 @@ class Finance extends Api
     public function my_sn()
     {
         $uid = $this->_uid;
-        $data = AgoodsSn::where(['u_id'=>$uid,'status'=>'0'])->column('sn');
+        $data = AgoodsSn::where(['u_id'=>$uid,'status'=>'0'])
+            ->where('ac_id',null)
+            ->column('sn');
         if (sizeof($data) > 0){
             $this->success('成功',$data,'0');
         }else{

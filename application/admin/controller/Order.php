@@ -3,6 +3,9 @@
 namespace app\admin\controller;
 
 use app\common\controller\Backend;
+use app\admin\model\Order as odr;
+use think\Db;
+use think\Exception;
 
 /**
  * 
@@ -74,4 +77,61 @@ class Order extends Backend
         }
         return $this->view->fetch();
     }
+
+
+    //完成订单
+    /*
+     * 购买数量30台 直接升级为 V5等级
+     * 200->v6
+     * 500->V7
+     * 1000->V8
+     *
+     * */
+    public function done()
+    {
+        $id = $this->request->param('ids');
+        $orderinfo = odr::get($id);
+        Db::startTrans();
+        try{
+            if ($orderinfo->num >= 30 && $orderinfo->num < 200){
+                //直接升级为 v5
+                $this->ups('V5',$orderinfo->u_id);
+            }elseif($orderinfo->num >= 200 && $orderinfo->num < 500){
+                //直接升级为 v6
+                $this->ups('V6',$orderinfo->u_id);
+            }elseif($orderinfo->num >= 500 && $orderinfo->num < 1000){
+                //直接升级为 v7
+                $this->ups('V7',$orderinfo->u_id);
+            }elseif($orderinfo->num >= 1000){
+                //直接升级为 v8
+                $this->ups('V8',$orderinfo->u_id);
+            }
+            $orderinfo->status = '5';//直接修改状态为已完成就行
+            $orderinfo->save();
+            Db::commit();
+            $this->success('订单已成功');
+
+        }catch(Exception $exception){
+            Db::rollback();
+            $this->error('失败'.$exception->getMessage());
+        }
+
+    }
+
+    /*
+     * 修改等级
+     * @param $level_name string  等级名字
+     * @param $uid int 用户id
+     * */
+    private function ups($level_name,$uid)
+    {
+        $level_id = Db::name('level')->where('name',$level_name)->value('id');
+        $ret = Db::name('auser')->where('id',$uid)->setField('level_id',$level_id);
+        if ($ret){
+            return 1;
+        }else{
+            return 0;
+        }
+    }
+
 }

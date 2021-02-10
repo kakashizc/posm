@@ -41,7 +41,32 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                         {field: 'agoods.price', title: __('Agoods.price'), operate:'BETWEEN'},
                         {field: 'agoods.factory', title: __('Agoods.factory')},
                         {field: 'agoods.type', title: __('Agoods.type')},
-                        {field: 'operate', title: __('Operate'), table: table, events: Table.api.events.operate, formatter: Table.api.formatter.operate}
+                        {field: 'operate', title: __('Operate'),
+                            buttons:[
+                                {
+                                    name: 'detail',
+                                    text: '已完成',
+                                    title: '已完成订单',
+                                    classname: 'btn btn-xs btn-warning btn-ajax',
+                                    icon: 'fa fa-address-book-o',
+                                    url: 'order/done',
+                                    confirm:'确定?',
+                                    success: function (data, ret) {
+                                        Layer.alert(ret.msg);
+                                        $(".btn-refresh").trigger('click')
+                                        return false;
+                                    },
+                                    visible: function (row) {
+                                        if ( row.status == '1' || row.status == '2' || row.status == '3'){
+                                            //返回true时按钮显示,返回false隐藏
+                                            return true;
+                                        }else{
+                                            return false;
+                                        }
+                                    }
+                                },
+                            ],
+                            table: table, events: Table.api.events.operate, formatter: Table.api.formatter.operate}
                     ]
                 ]
             });

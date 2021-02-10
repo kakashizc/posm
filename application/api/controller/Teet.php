@@ -30,16 +30,32 @@ class Teet extends Api
     protected $noNeedLogin = ['*'];
     protected $noNeedRight = ['*'];
 
-    public function aaa()
+    /*
+     * 判断是否自激活的下一个月开始连续5个月,每个月的交易额达到3万元如果满足那么给予奖励50元
+     * @param $sn string sn编号
+     * @param $etime string 激活后,下一个月的第一秒时间戳
+     * */
+    public function mtime()
     {
-        $userinfo = Auser::get(3);
-        $sons = Auser::where(['pid'=>3,'reback'=>'1'])->count();
-        if ( $sons >= 3 ){
-            //可以升级
-            $v2 = Level::get(['name' => 'V2']);
-            $userinfo->level_id = $v2->id;
-            $userinfo->save();
+        $etime=time();
+        $month_time = 3600*24*32;//一个月到下一个月的时间戳 按照32天计算,这样计算出来的下个月时间戳,肯定是下一个月中的时间戳
+        for($i=0;$i<5;$i++){
+            $one = $this->tt($etime+$i*$month_time);
+            $month1_start = $one['stime'];//月的开始时间
+            $month1_end = $one['etime'];//月的结束时间
+
         }
+    }
+
+    private function tt($time)
+    {
+        $date = date('Y-m-d',$time);
+        $start_date =  mktime(00, 00, 00, date('m', strtotime($date)), 01);
+        $end_date =  mktime(23, 59, 59, date('m', strtotime($date))+1, 00);
+        return [
+            'stime' => $start_date,
+            'etime' => $end_date,
+        ];
 
     }
 

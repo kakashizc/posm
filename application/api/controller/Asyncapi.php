@@ -19,6 +19,8 @@ use think\Db;
 use think\Config;
 use think\Exception;
 use app\api\controller\Workday;
+use function GuzzleHttp\Psr7\uri_for;
+
 class Asyncapi extends Api
 {
     protected $noNeedLogin = ['*'];
@@ -29,13 +31,13 @@ class Asyncapi extends Api
      *      2,提现列表和接口 , 提现手续费, 每一笔3元 √
      *      3,下级列表中展示每个下级发展下级的个数 √
      *      4,展示上级信息 √
-     *      5,批量购买机具直接升级至对应的等级
+     *      5,批量购买机具直接升级至对应的等级 √
      *      6,一年内交易额不够,第二年直接 降级
      *      7,撤回订单的交易处理
      *      8,借记卡的判断,也存储一份 但是不算分润和业绩 √
      *      9,注册协议加上 √
      *      10,登录注册的短信验证
-     *      11,营销活动奖励->自终端激活次月起,5个月内每个月累计交易量满3万元，第六个月奖励乙方 50元/台/月
+     *      11,营销活动奖励->自终端激活次月起,5个月内每个月累计交易量满3万元，第六个月奖励乙方 50元/台/月 √
      *
      * */
 
@@ -118,11 +120,12 @@ class Asyncapi extends Api
         //1,先根据自己的等级, 返给万几的佣金,同时累计业绩
         Db::startTrans();
         try{
-            $this->feed_record($user,$arr['money'],2,$count);
+            $this->feed_record($user,$arr['money'],2,$arr['snNo'],$count);
             //2,返给上级佣金,同时给上级加上业绩
-            $this->feed_record($user,$arr['money'],1);
+            $this->feed_record($user,$arr['money'],1,$arr['snNo']);
             //3,更改记录为已返佣
             Db::name('sn_record')->where('id',$arr['id'])->setField('status','1');
+            //4, 查看激活状态
             Db::commit();
         }catch(Exception $exception){
             @file_put_contents('asyncapi.txt',$exception->getMessage().'||'.date('Y-m-d H:i:s',time())."\n",FILE_APPEND);
@@ -135,10 +138,11 @@ class Asyncapi extends Api
      * 插入一条佣金记录
      * @param $user array 用户信息
      * @param $money float 刷卡金额
+     * @param $snNo string 刷卡的sn号
      * @param $type int 佣金类型:1=下级刷卡返佣,2=本人刷卡
      * @param $count int 90个自然日内, 刷够5000元, 返回给88元的机具采购费用 1=金额可以算入 0=不可
      * */
-    private function feed_record($user,$money,$type,$count=2)
+    private function feed_record($user,$money,$type,$snNo,$count=2)
     {
         $mylevel = Level::get(['id'=>$user['level_id']]);
         $broker = $mylevel->feed;//用户等级对应的分润比例 -> 元/万元
@@ -175,9 +179,18 @@ class Asyncapi extends Api
             if ($userinfo->five < 5000){
                 $userinfo->five = $userinfo->five+$money;
                 $userinfo->save();
+                //判断是否第一笔
+                $agoods = AgoodsSn::get(['sn'=>$snNo]);
+                if($agoods->status == '0'){//如果状态是未激活,说明是第一笔消费
+                    $agoods->status = '1';//修改为伪激活
+                    $agoods->save();
+                }
                 if ($userinfo->five >= 5000 ){
                     //返回给88机具钱,同时插入一条记录
                     $this->eight($uid);
+                    //修改机具状态为真激活
+                    $up = ['status'=>'2','actime'=>time()];
+                    Db::name('agoods_sn')->where('sn',$snNo)->update($up);
                 }
             }
         }

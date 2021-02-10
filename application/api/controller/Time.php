@@ -74,9 +74,9 @@ class Time extends Api
         //1,先根据自己的等级, 返给万几的佣金,同时累计业绩
         Db::startTrans();
         try{
-            $this->feed_record($user,$arr['money'],2,$count);
+            $this->feed_record($user,$arr['money'],2,$arr['snNo'],$count);
             //2,返给上级佣金,同时给上级加上业绩
-            $this->feed_record($user,$arr['money'],1);
+            $this->feed_record($user,$arr['money'],1,$arr['snNo']);
             //3,更改记录为已返佣
             Db::name('sn_record_bak')->where('id',$arr['id'])->setField('status','1');
             unset($arr['id']);
@@ -100,7 +100,7 @@ class Time extends Api
      * @param $type int 佣金类型:1=下级刷卡返佣,2=本人刷卡
      * @param $count int 90个自然日内, 刷够5000元, 返回给88元的机具采购费用 1=金额可以算入 0=不可
      * */
-    private function feed_record($user,$money,$type,$count=2)
+    private function feed_record($user,$money,$type,$snNo,$count=2)
     {
         $mylevel = Level::get(['id'=>$user['level_id']]);
         $broker = $mylevel->feed;//用户等级对应的分润比例 -> 元/万元
@@ -137,9 +137,18 @@ class Time extends Api
             if ($userinfo->five < 5000){
                 $userinfo->five = $userinfo->five+$money;
                 $userinfo->save();
+                //判断是否第一笔
+                $agoods = AgoodsSn::get(['sn'=>$snNo]);
+                if($agoods->status == '0'){//如果状态是未激活,说明是第一笔消费
+                    $agoods->status = '1';//修改为伪激活
+                    $agoods->save();
+                }
                 if ($userinfo->five >= 5000 ){
                     //返回给88机具钱,同时插入一条记录
                     $this->eight($uid);
+                    //修改机具状态为真激活
+                    $up = ['status'=>'2','actime'=>time()];
+                    Db::name('agoods_sn')->where('sn',$snNo)->update($up);
                 }
             }
         }
@@ -148,6 +157,7 @@ class Time extends Api
             $userinfo = Auser::get($user['u_id']);
             $userinfo->all_trade = $userinfo->all_trade+$money;
             $userinfo->save();
+
             //判断是否升级
             $this->isUp($user['u_id']);
         }else{

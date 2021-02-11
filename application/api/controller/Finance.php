@@ -514,7 +514,7 @@ class Finance extends Api
         $uid = $this->_uid;
         $data = $this->request->param();
         $user = Auser::get($uid);
-        if ($data['money'] > $user->money){
+        if ($data['money']+3 > $user->money){
             $this->success('余额不足','','1');
         }
         if ($data['money'] < 50 ){
@@ -524,7 +524,7 @@ class Finance extends Api
         try{
             //插入记录表
             $data['createtime'] = time();
-            $data['money'] = $data['money'] - 3.00;//每笔提现手续费3元
+            $data['money'] = $data['money'] + 3.00;//每笔提现手续费3元
             Db::name('tixian')->insertGetId($data);
             //减少用户余额
             $user->setDec('money',$data['money']);

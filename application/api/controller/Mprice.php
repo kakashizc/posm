@@ -52,6 +52,7 @@ class Mprice extends Api
                     //所有get数组里面的uid用户,余额增加50,并且添加一条佣金记录
                     foreach ($get as $k=>$v){
                         Db::name('auser')->where('id',$v)->setInc('money',50);
+                        Db::name('auser')->where('id',$v)->setField('mprice','1');
                         $data['u_id'] = $v;
                         $data['money'] = 50.00;
                         $data['status'] = '4';
@@ -83,7 +84,7 @@ class Mprice extends Api
             $month1_end = $one['etime'];//月的结束时间
             //根据sn号,和 时间 查找当月的业绩,如果有一个不符合就返回false
             $month_achievement = Db::name('sn_record')
-                ->where('sn',$sn)
+                ->where('snNo',$sn)
                 ->where('type','1')
                 ->whereBetween('ctime',[$month1_start,$month1_end])
                 ->sum('money');
@@ -96,13 +97,14 @@ class Mprice extends Api
 
     private function tt($time)
     {
-         $date = date('Y-m-d',$time);
-         $start_date =  mktime(00, 00, 00, date('m', strtotime($date)), 01);
-         $end_date =  mktime(23, 59, 59, date('m', strtotime($date))+1, 00);
-         return [
-             'stime' => $start_date,
-             'etime' => $end_date,
-         ];
+        $date = date('Y-m-d',$time);
+        $start_date =  date('Y-m-01', strtotime($date));
+        $stime = strtotime($start_date);
+        $end_date = date('Y-m-d', strtotime("$start_date +1 month -1 day"));
+        return  [
+            'stime' => $stime,
+            'etime' => strtotime($end_date) + 3600 *24 -1,
+        ];
 
     }
 }

@@ -61,7 +61,7 @@ class Dposapi extends Api
             $insert['time'] = strtotime($new['transDate'].$new['transTime']);
             $insert['ctime'] = time();//记录创建时间
             $insert['money'] = $new['transAmt'];
-            $insert['u_id'] = $user->u_id??0;//机具所属用户id
+            $insert['u_id'] = $user->ac_id??0;//机具所属用户id
             $insert['date'] = date('Y-m',$insert['time']);
             $insert['transDate'] = date('Y-m-d H:i:s',$insert['time']);
             $insert['agentNo'] = $new['agentNo'];

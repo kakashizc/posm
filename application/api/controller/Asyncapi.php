@@ -104,6 +104,7 @@ class Asyncapi extends Api
             unset($arr['id']);
             Db::name('sn_record_bak')->insert($arr);
         }
+        @file_put_contents('success.txt',$arr['snNo'].'/卡号/异步执行成功,金额'.$arr['money'].'||'.date('Y-m-d H:i:s',time()).'++'."\n",FILE_APPEND);
     }
 
     /*

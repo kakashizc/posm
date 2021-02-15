@@ -14,12 +14,10 @@ use app\admin\model\Auser;
 use app\admin\model\Feed;
 use app\admin\model\Level;
 use app\common\controller\Api;
-use Monolog\Handler\IFTTTHandler;
 use think\Db;
 use think\Config;
 use think\Exception;
-use app\api\controller\Workday;
-use function GuzzleHttp\Psr7\uri_for;
+
 
 class Asyncapi extends Api
 {
@@ -116,7 +114,8 @@ class Asyncapi extends Api
     private function back($arr,$count)
     {
         //根据snNo 查询用户u_id->查询用户信息
-        $user = AgoodsSn::where(['sn'=>$arr['snNo']])->find();
+        $uid = AgoodsSn::where(['sn'=>$arr['snNo']])->value('ac_id');
+        $user = Auser::where('id',$uid)->find();
         //1,先根据自己的等级, 返给万几的佣金,同时累计业绩
         Db::startTrans();
         try{
@@ -146,9 +145,9 @@ class Asyncapi extends Api
     {
         $mylevel = Level::get(['id'=>$user['level_id']]);
         $broker = $mylevel->feed;//用户等级对应的分润比例 -> 元/万元
-        $insert['u_id'] = $user['u_id'];
+        $insert['u_id'] = $user['id'];
         if ($type == 2){
-            $uid = $user['u_id'];
+            $uid = $user['id'];
             //如果是别人刷卡,获取佣金为自己等级对应的分润
             $bro = ($broker*$money)/10000;
         }else{
@@ -158,7 +157,7 @@ class Asyncapi extends Api
             $parent_level = Level::get($parent->level_id);
             $parent_feed = $parent_level->feed;
 
-            $son = Auser::get($user['u_id']);
+            $son = Auser::get($user['id']);
             $son_level = Level::get($son->level_id);
             $son_feed = $son_level->feed;
             if ($parent_feed > $son_feed){//如果上级＞下级佣金比例，那么进行分润相减
@@ -196,11 +195,11 @@ class Asyncapi extends Api
         }
         if ($type == 2){
             //给自己增加总业绩金额
-            $userinfo = Auser::get($user['u_id']);
+            $userinfo = Auser::get($user['id']);
             $userinfo->all_trade = $userinfo->all_trade+$money;
             $userinfo->save();
             //判断是否升级
-            $this->isUp($user['u_id']);
+            $this->isUp($user['id']);
         }else{
             //给上级增加总业绩
             $userinfo = Auser::get($user['pid']);
@@ -215,6 +214,7 @@ class Asyncapi extends Api
     private function eight($uid)
     {
         $insert['card_id'] = $uid;
+        $insert['u_id'] = $uid;
         $insert['status'] = 3;
         $insert['ctime'] = time();
         $insert['date_d'] = date('Y-m-d',time());//年月日

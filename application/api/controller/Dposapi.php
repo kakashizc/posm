@@ -15,6 +15,11 @@ use fast\Async;
 use think\Db;
 use think\Exception;
 use app\common\controller\Redis;
+
+/*
+     * 交易测试密文:{"one":"PtFtbxTKNDY+o9hIXwCrSOpWxyzxOUBS5uKGDHb0pn9eqDblhEoX/tHpMxWJhmfKT/9QtsFitnCM6znIqQ2lhw==","two":"uKyIovE3KG6b5dfJikXQ3Wa1CzXMSFOzn2A6iSY6IukNrMFBeJoz2IroGMkcmKE95e3p8/vqh5lQWAMNV3wF2aLNit+Nh3Pzpe9H453nzOfCsPjmbeKept5wndC28QIUyCGP89fRM+C9h33fl4SyTj5BRXCeweCZehMktlroEDzvmnRoVov83R0hAYJ8Dmw8riffGEulOiYxQJDQTQSIFeMjd9YvUlQ5Uzi4qvZfjnQjYJFNrtYAVaC0T8XuSJHh5yLYN/Dih7T5lKj3X9zOcEgXxah8VqYBQJwC9fML9Tbw1K7xxl1HlXXIUx1XoD+fZB2UXGv9ekymnveQXIeKClpDZj5JEmWTMvCY91O/rYDgfXuxb5AWpCtdq0iP4xfWvvGel+62pxo6g6fs002F3ptoKUugqZt0X7p/1ceZ2ryaNttPXFg6vJX+Z2qJq9PVgvZd+ACOKE3W0rniPSl9fjAMhUmpgdm9vcahsaeCtIhi0FVp3kQN5pJ5wRL1N1xMT4PP0gp0ZfNbDjESk3Rkiyz7BRmMhrJpZ2cnNcnulLLV1DaMv5vaLAZHjLzwnyQ2zf2SFYk9e7MxlW7ImBJUuxt/1urLP/HdG4a5SaOzyA60/of/X6DFtF4t7SxwSgy/wS+uaDAFjqKq4cV3W0UxQRzioid2AGNsHGo8j9cUiBL+ACRwmtWHasQhZekeuP1qU3/JfcoggT4i0c1rOdP3e1kEsSUmaUh9hAn1xhQZbRU5LzMzG4xq4w==","three":"cfe0732aa1e2c88fe2400879ab734f1c726f5df0"}
+     * 绑定终端测试密文:{"one":"yJrrFErnz3qfNIEn6aGDImX6CBaENJhTnx7hbkrvD1yWny/BU0mNvkmqN9GKnGYwNHhs3rC+OuRChTaxFCnbrw==","two":"b9c+ZcFHuTI=","three":"d7a8e7ca98eeb3b9f9dd7666a538bae065661961"}
+     * */
 class Dposapi extends Api
 {
     protected $noNeedLogin = ['*'];
@@ -25,13 +30,9 @@ class Dposapi extends Api
     {
         parent::__construct();
         $this->_Dpos = new Dpos();
-        $this->_Redis = Redis::getInstance()->getRedisConn();
+        //$this->_Redis = Redis::getInstance()->getRedisConn();
     }
-    public function ae()
-    {
-        $this->_Redis->lPush('index','ss');
-        dump($this->_Redis->rPop('index'));
-    }
+
     /*
      * 实时交易数据推送
      * */
@@ -88,13 +89,13 @@ class Dposapi extends Api
             }else{
                 $return['resultContent'] = '失败';
                 $return['resultCode'] = '9999';
-                @file_put_contents('trade.txt','交易接口调用失败---'.json_encode($dataarr).'||'.date('Y-m-d H:i:s',time())."\n",FILE_APPEND);
+                @file_put_contents('trade.txt','交易接口调用失败---'.json_encode($dataarr,JSON_UNESCAPED_UNICODE).'||'.date('Y-m-d H:i:s',time())."\n",FILE_APPEND);
                 return json_encode($return,JSON_UNESCAPED_UNICODE);
             }
         }catch(Exception $exception){
             $return['resultContent'] = '失败';
             $return['resultCode'] = '9999';
-            @file_put_contents('trade.txt','交易接口调用失败---'.json_encode($dataarr).'||'.date('Y-m-d H:i:s',time())."\n",FILE_APPEND);
+            @file_put_contents('trade.txt','交易接口调用失败---'.json_encode($dataarr,JSON_UNESCAPED_UNICODE).'||'.date('Y-m-d H:i:s',time())."\n",FILE_APPEND);
             return json_encode($return,JSON_UNESCAPED_UNICODE);
         }
     }
@@ -145,13 +146,13 @@ class Dposapi extends Api
             }else{
                 $return['resultContent'] = '失败';
                 $return['resultCode'] = '9999';
-                @file_put_contents('bind.txt','绑定接口调用失败---'.json_encode($dataarr).'||'.date('Y-m-d H:i:s',time())."\n",FILE_APPEND);
+                @file_put_contents('bind.txt','绑定接口调用失败---'.json_encode($dataarr,JSON_UNESCAPED_UNICODE).'||'.date('Y-m-d H:i:s',time())."\n",FILE_APPEND);
                 return json_encode($return,JSON_UNESCAPED_UNICODE);
             }
         }catch(Exception $exception){
             $return['resultContent'] = '失败';
             $return['resultCode'] = '9999';
-            @file_put_contents('bind.txt','绑定接口调用失败---'.json_encode($dataarr).'||'.date('Y-m-d H:i:s',time())."\n",FILE_APPEND);
+            @file_put_contents('bind.txt','绑定接口调用失败---'.json_encode($dataarr,JSON_UNESCAPED_UNICODE).'||'.date('Y-m-d H:i:s',time())."\n",FILE_APPEND);
             return json_encode($return,JSON_UNESCAPED_UNICODE);
         }
     }

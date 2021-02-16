@@ -17,21 +17,21 @@ class Bus extends Api
     protected $noNeedRight = ['*'];
 
     /*
-     * 登录
+     * 密码登录
      * */
     public function login()
     {
         $mobile = $this->request->param('mobile');//手机号
-        $msg = $this->request->param('msg');//短信验证码
+        // $msg = $this->request->param('msg');//短信验证码
         $pass = $this->request->param('password');//密码
-        if(!preg_match("/^1[345789]{1}\d{9}$/",$mobile) || !$msg ){
+        if(!preg_match("/^1[345789]{1}\d{9}$/",$mobile) ){
             $this->success('手机号格式错误或缺少参数!','','1');
         }
 
-        $cache_msg = Cache::get($mobile);
-        if ($msg != $cache_msg) {//如果验证码不正确,退出
-            $this->success('短信验证码错误或者超时', '','2');
-        }
+        // $cache_msg = Cache::get($mobile);
+        // if ($msg != $cache_msg) {//如果验证码不正确,退出
+        //     $this->success('短信验证码错误或者超时', '','2');
+        // }
         //如果此手机号未登陆过, 那么就默认注册一个新号,给一个默认密码
         $user = Auser::get(['mobile'=>$mobile, 'password'=>md5($pass)]);
         //$user = Auser::get(['mobile'=>$mobile]);

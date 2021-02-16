@@ -66,7 +66,7 @@ class Index extends Api
         $avatarUrl = $this->request->param("avatar");
         $nickName = $this->request->param("name");
         $pidstr = $this->request->param('pidstr');
-
+        $mobile = $this->request->param("mobile");
         if ($pidstr){
             $pid = $pidstr;
         }
@@ -78,9 +78,9 @@ class Index extends Api
         //获取当前的openid
         $openId = $arr['openid'];
         //进行查询
-        $personnel_find = Db::name('auser')->where("openid", $openId)->find();
+        $personnel_find = Db::name('auser')->where("mobile", $mobile)->find();
 
-        if (!empty($personnel_find)) {
+        if ( !empty($personnel_find) ) {
 
             $payload = array('iss'=>'admin','iat'=>time(),'exp'=>time()+72000000000,'nbf'=>time(),'sub'=>'www.admin.com','uid'=>$personnel_find['id']);
             $token = Jwt::getToken($payload);
@@ -95,14 +95,10 @@ class Index extends Api
             $personnel_data['nickName'] = $nickName;
             //获取当前头像
             $personnel_data['avatar'] = $avatarUrl;
-            //设置上级
-            $personnel_data['pid'] = isset($pid)?$pid:0;
-            //获取当前时间
-            $personnel_data['ctime'] = time();
-            //执行添加操作
-            $personnel_id = Db::name('auser')->insertGetId($personnel_data);
+
+            Db::name('auser')->where('mobile',$mobile)->update($personnel_data);
             //进行查询
-            $personnel_find = Db::name('auser')->where('id', $personnel_id)->find();
+            $personnel_find = Db::name('auser')->where('mobile',$mobile)->find();
             $payload = array('iss'=>'admin','iat'=>time(),'exp'=>time()+72000000000,'nbf'=>time(),'sub'=>'www.admin.com','uid'=>$personnel_find['id']);
             $token = Jwt::getToken($payload);
             $data = [

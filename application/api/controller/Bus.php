@@ -21,9 +21,9 @@ class Bus extends Api
      * */
     public function login()
     {
-        $mobile = $this->request->request('mobile');//手机号
-        $msg = $this->request->request('msg');//短信验证码
-        $pass = $this->request->request('password');//密码
+        $mobile = $this->request->param('mobile');//手机号
+        $msg = $this->request->param('msg');//短信验证码
+        $pass = $this->request->param('password');//密码
         if(!preg_match("/^1[345789]{1}\d{9}$/",$mobile) || !$msg ){
             $this->success('手机号格式错误或缺少参数!','','1');
         }
@@ -52,17 +52,22 @@ class Bus extends Api
      * */
     public function register()
     {
-        $mobile = $this->request->request('mobile');//手机号
-        $msg = $this->request->request('msg');//短信验证码
-        $pass = $this->request->request('password');//密码
-        $code = $this->request->request('code');//上级推荐码
+        $mobile = $this->request->param('mobile');//手机号
+        $msg = $this->request->param('msg');//短信验证码
+        $pass = $this->request->param('password');//密码
+        $code = $this->request->param('code');//上级推荐码
         if( !preg_match("/^1[345789]{1}\d{9}$/",$mobile) ){
             $this->success('手机号格式错误!','','1');
         }
+        $re = Auser::get(['mobile'=>$mobile]);
+        if ( $re ) $this->success('此手机号已存在');
         if( !$code||!$msg||!$pass ){
             $this->success('缺少参数!','','1');
         }
-
+        $cache_msg = Cache::get($mobile);
+        if ($msg != $cache_msg) {//如果验证码不正确,退出
+            $this->success('短信验证码错误或者超时', '','2');
+        }
         $data = array(
             'mobile' => $mobile,
             'password' => md5($pass),

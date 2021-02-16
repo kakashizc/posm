@@ -8,23 +8,119 @@
 
 namespace app\api\controller;
 
-
 use app\common\controller\Api;
-
+use think\Cache;
+use app\admin\model\Auser;
 class Bus extends Api
 {
     protected $noNeedLogin = ['*'];
     protected $noNeedRight = ['*'];
 
     /*
-     * 业务逻辑:
-     * 1, 用户购买一台pos机是88元, 此pos刷卡(信用卡刷)就返给用户88元
-     * 2, pos机刷满5000才算真激活
-     * 3, v1-v8 8个级别,v1->万1的利润 ,依次类推v8是万8
-     *
-     * 平台营销奖励:
-     *
-     *
+     * 登录
      * */
+    public function login()
+    {
+        $mobile = $this->request->request('mobile');//手机号
+        $msg = $this->request->request('msg');//短信验证码
+        $pass = $this->request->request('password');//密码
+        if(!preg_match("/^1[345789]{1}\d{9}$/",$mobile) || !$msg ){
+            $this->success('手机号格式错误或缺少参数!','','1');
+        }
+
+        $cache_msg = Cache::get($mobile);
+        if ($msg != $cache_msg) {//如果验证码不正确,退出
+            $this->success('短信验证码错误或者超时', '','2');
+        }
+        //如果此手机号未登陆过, 那么就默认注册一个新号,给一个默认密码
+        $user = Auser::get(['mobile'=>$mobile, 'password'=>md5($pass)]);
+        //$user = Auser::get(['mobile'=>$mobile]);
+        if( !$user ){//如果查询不到
+            $this->success('手机号或密码错误','','0');
+        }else{
+            $this->check_white($mobile);
+            $payload = array('iss'=>'admin','iat'=>time(),'exp'=>time()+72000000,'nbf'=>time(),'sub'=>'www.admin.com','uid'=>$user->id);
+            $token = Jwt::getToken($payload);
+            $return['token'] = $token;
+            $this->success('成功',$return,'0');
+        }
+    }
+
+
+    /*
+     * 注册账号
+     * */
+    public function register()
+    {
+        $mobile = $this->request->request('mobile');//手机号
+        $msg = $this->request->request('msg');//短信验证码
+        $pass = $this->request->request('password');//密码
+        $code = $this->request->request('code');//上级推荐码
+        if( !preg_match("/^1[345789]{1}\d{9}$/",$mobile) ){
+            $this->success('手机号格式错误!','','1');
+        }
+        if( !$code||!$msg||!$pass ){
+            $this->success('缺少参数!','','1');
+        }
+
+        $data = array(
+            'mobile' => $mobile,
+            'password' => md5($pass),
+            'ctime' => time()
+        );
+        $user = Auser::create($data);
+        $payload = array('iss'=>'admin','iat'=>time(),'exp'=>time()+72000000,'nbf'=>time(),'sub'=>'www.admin.com','uid'=>$user->id);
+        $token = Jwt::getToken($payload);
+        $return['token'] = $token;
+        $return['code'] = $this->getCode($user->id);
+        $this->success('注册成功',$return,'0');
+    }
+
+
+    /*
+     * 检测用户是否被拉黑, 如果拉黑不能继续操作了
+     * */
+    protected function check_white($mobile)
+    {
+
+        if(!preg_match("/^1[345789]{1}\d{9}$/",$mobile)){
+            //如果是手机号格式,用手机号检测,如果不是 用用户id检测
+            $where = array('id'=>$mobile);
+        }else{
+            $where = ['mobile'=>$mobile];
+        }
+        //检测该手机账号是否存在,并且是否设定为异常账号
+        $user = Auser::get($where);
+        if ($user){
+            if ($user->status == '3'){
+                $this->success('账号异常','','9');
+            }
+        }else{
+            $this->success('账号不存在','','1');
+        }
+    }
+    /*
+    * 生成不重复的推荐码
+    * */
+    private function getCode($uid)
+    {
+        $user = Auser::get($uid);
+        if (!$user->code){
+            //生成code
+            $code =  mt_rand(10000,999999);
+            //查看生成的推荐码是否已存在
+            $is = Auser::where(['code'=>$code])->find();
+            if ($is){
+                $this->getCode($uid);
+            }else{
+                //如果没人用这个推荐码, 那么更新为当前用户的推荐码
+                $user->code = $code;
+                $user->save();
+                return  $code;
+            }
+        }else{
+            return $user->code;
+        }
+    }
 
 }

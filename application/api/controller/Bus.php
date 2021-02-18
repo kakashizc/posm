@@ -68,7 +68,7 @@ class Bus extends Api
         }
         $cache_msg = Cache::get($mobile);
         if ($msg != $cache_msg) {//如果验证码不正确,退出
-            $this->success('短信验证码错误或者超时', '','2');
+            //$this->success('短信验证码错误或者超时', '','2');
         }
         $data = array(
             'mobile' => $mobile,

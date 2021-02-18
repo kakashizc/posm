@@ -80,7 +80,7 @@ class Index extends Api
         //进行查询
         $personnel_find = Db::name('auser')->where("mobile", $mobile)->find();
 
-        if ( !empty($personnel_find) ) {
+        if ( $personnel_find['openid'] ) {
 
             $payload = array('iss'=>'admin','iat'=>time(),'exp'=>time()+72000000000,'nbf'=>time(),'sub'=>'www.admin.com','uid'=>$personnel_find['id']);
             $token = Jwt::getToken($payload);

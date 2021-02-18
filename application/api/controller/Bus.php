@@ -11,6 +11,8 @@ namespace app\api\controller;
 use app\common\controller\Api;
 use think\Cache;
 use app\admin\model\Auser;
+use think\Db;
+
 class Bus extends Api
 {
     protected $noNeedLogin = ['*'];
@@ -61,19 +63,27 @@ class Bus extends Api
         if( !preg_match("/^1[345789]{1}\d{9}$/",$mobile) ){
             $this->success('手机号格式错误!','','1');
         }
-        $re = Auser::get(['mobile'=>$mobile]);
-        if ( $re ) $this->success('此手机号已存在');
         if( !$code||!$msg||!$pass ){
             $this->success('缺少参数!','','1');
         }
+        //查找当前手机号是否存在
+        $re = Auser::get(['mobile'=>$mobile]);
+        if ( $re ) $this->success('此手机号已存在');
+        //查找上级是否存在
+        $ret = Auser::get(['code'=>$code]);
+        if ( !$ret ) $this->success('上级不存在');
+
         $cache_msg = Cache::get($mobile);
         if ($msg != $cache_msg) {//如果验证码不正确,退出
             //$this->success('短信验证码错误或者超时', '','2');
         }
+        $level_id = Db::name('level')->where('name','V1')->value('id');
         $data = array(
             'mobile' => $mobile,
             'password' => md5($pass),
-            'ctime' => time()
+            'ctime' => time(),
+            'pid' => $ret->id,
+            'level_id' => $level_id
         );
         $user = Auser::create($data);
         $payload = array('iss'=>'admin','iat'=>time(),'exp'=>time()+72000000,'nbf'=>time(),'sub'=>'www.admin.com','uid'=>$user->id);

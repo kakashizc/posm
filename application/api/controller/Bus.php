@@ -42,6 +42,8 @@ class Bus extends Api
             $payload = array('iss'=>'admin','iat'=>time(),'exp'=>time()+72000000,'nbf'=>time(),'sub'=>'www.admin.com','uid'=>$user->id);
             $token = Jwt::getToken($payload);
             $return['token'] = $token;
+            $return['mobile'] = $user->mobile;
+            $return['code'] = $user->code;
             $this->success('成功',$return,'0');
         }
     }

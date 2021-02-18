@@ -36,7 +36,7 @@ class Bus extends Api
         $user = Auser::get(['mobile'=>$mobile, 'password'=>md5($pass)]);
         //$user = Auser::get(['mobile'=>$mobile]);
         if( !$user ){//如果查询不到
-            $this->success('手机号或密码错误','','0');
+            $this->success('手机号或密码错误','','1');
         }else{
             $this->check_white($mobile);
             $payload = array('iss'=>'admin','iat'=>time(),'exp'=>time()+72000000,'nbf'=>time(),'sub'=>'www.admin.com','uid'=>$user->id);

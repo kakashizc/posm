@@ -174,7 +174,6 @@ class User extends Api
      * */
     public function mycode()
     {
-
         $qrcode = new Qrcode();
         $uid =  $this->_token['uid'];
         $usercode = Db::name('auser')->find($uid);
@@ -183,8 +182,8 @@ class User extends Api
             $ret= array('qrcode'=>IMG.$usercode['qrcode']);
             $this->success('成功',$ret,'0');
         }
-        $img = $qrcode->get_qrcode($uid,1);
-        if (sizeof($img) >= 2){
+        $img = $qrcode->get_qrcode($usercode['code'],1);
+        if ( sizeof($img) >= 2 ){
             $local_path = $img['local_path'];
             Db::name('auser')->where('id',$uid)->setField('qrcode',$local_path);
             $ret['qrcode'] = $img['pname'];

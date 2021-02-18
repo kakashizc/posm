@@ -20,9 +20,9 @@ class Qrcode extends Api
      * 生成带参数的二维码
      * @param int $type 生成二维码的类型 1=小程序用户生成二维码 2= app师傅用户生成二维码
      * */
-    public function get_qrcode($uid,$type)
+    public function get_qrcode($code,$type)
     {
-        $str = "user_id=$uid";
+        $str = "user_id=$code";//用户推荐码 code
         $ACCESS_TOKEN = $this->token();
         //构建请求二维码参数
         //path是扫描二维码跳转的小程序路径，可以带参数?id=xxx

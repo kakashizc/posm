@@ -187,6 +187,7 @@ class User extends Api
             $local_path = $img['local_path'];
             Db::name('auser')->where('id',$uid)->setField('qrcode',$local_path);
             $ret['qrcode'] = $img['pname'];
+            $ret['indent_name'] = $img['indent_name']??'';
             $ret['code'] = $usercode['code'];//我的邀请码
             $this->success('成功',$ret,'0');
         }else{

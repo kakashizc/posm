@@ -159,4 +159,28 @@ class Auser extends Backend
 
     }
 
+    //审核通过
+    public function pass()
+    {
+        $id = $this->request->param('ids');
+        $res = $this->model->where('id',$id)->setField('status','2');
+        if ($res){
+            $this->success('已通过');
+        }else{
+            $this->error('失败');
+        }
+    }
+
+    //拒绝审核
+    public function negative()
+    {
+        $id = $this->request->param('ids');
+        $res = $this->model->where('id',$id)->setField('status','3');
+        if ($res){
+            $this->success('已拒绝');
+        }else{
+            $this->error('失败');
+        }
+    }
+
 }

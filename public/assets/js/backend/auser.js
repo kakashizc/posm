@@ -55,7 +55,49 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                                     classname: 'btn btn-xs btn-success btn-dialog',
                                     icon: 'fa fa-address-book-o',
                                     url: 'Auser/mac'
-                                }
+                                },
+                                {
+                                    name: 'detail',
+                                    text: '通过',
+                                    title: '审核通过',
+                                    classname: 'btn btn-xs btn-primary btn-ajax',
+                                    icon: 'fa fa-address-book-o',
+                                    url: 'auser/pass',
+                                    confirm:'确认通过?',
+                                    success: function (data, ret) {
+                                        Layer.alert(ret.msg);
+                                        $(".btn-refresh").trigger('click')
+                                        return false;
+                                    },
+                                    visible: function (row) {
+                                        if (row.status == '1'){
+                                            return true;
+                                        }else{
+                                            return false;
+                                        }
+                                    }
+                                },
+                                {
+                                    name: 'detail',
+                                    text: '拒绝',
+                                    title: '审核拒绝通过',
+                                    classname: 'btn btn-xs btn-warning btn-ajax',
+                                    icon: 'fa fa-address-book-o',
+                                    url: 'auser/negative',
+                                    confirm:'确认拒绝通过?',
+                                    success: function (data, ret) {
+                                        Layer.alert(ret.msg);
+                                        $(".btn-refresh").trigger('click')
+                                        return false;
+                                    },
+                                    visible: function (row) {
+                                        if (row.status == '1'){
+                                            return true;
+                                        }else{
+                                            return false;
+                                        }
+                                    }
+                                },
                             ],
                             table: table, events: Table.api.events.operate, formatter: Table.api.formatter.operate}
                     ]

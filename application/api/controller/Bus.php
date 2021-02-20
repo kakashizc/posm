@@ -68,10 +68,10 @@ class Bus extends Api
         }
         //查找当前手机号是否存在
         $re = Auser::get(['mobile'=>$mobile]);
-        if ( $re ) $this->success('此手机号已存在');
+        if ( $re ) $this->success('此手机号已存在','','1');
         //查找上级是否存在
         $ret = Auser::get(['code'=>$code]);
-        if ( !$ret ) $this->success('上级不存在');
+        if ( !$ret ) $this->success('上级不存在','','1');
 
         $cache_msg = Cache::get($mobile);
         if ($msg != $cache_msg) {//如果验证码不正确,退出

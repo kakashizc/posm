@@ -1,0 +1,82 @@
+<form id="edit-form" class="form-horizontal" role="form" data-toggle="validator" method="POST" action="">
+
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Agentno')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-agentNo" class="form-control" name="row[agentNo]" type="text" value="{$row.agentNo|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Memno')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-memNo" class="form-control" name="row[memNo]" type="text" value="{$row.memNo|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Termno')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-termNo" class="form-control" name="row[termNo]" type="text" value="{$row.termNo|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Snno')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-snNo" class="form-control" name="row[snNo]" type="text" value="{$row.snNo|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Brandsn')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-brandSn" class="form-control" name="row[brandSn]" type="text" value="{$row.brandSn|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Activitytype')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-activityType" class="form-control" name="row[activityType]" type="text" value="{$row.activityType|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Binddate')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-bindDate" class="form-control" name="row[bindDate]" type="text" value="{$row.bindDate|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Bindtime')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-bindTime" class="form-control datetimepicker" data-date-format="YYYY-MM-DD HH:mm:ss" data-use-current="true" name="row[bindTime]" type="text" value="{:$row.bindTime?datetime($row.bindTime):''}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Memname')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-memName" class="form-control" name="row[memName]" type="text" value="{$row.memName|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Memphone')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-memPhone" class="form-control" name="row[memPhone]" type="text" value="{$row.memPhone|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Time')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-time" class="form-control datetimepicker" data-date-format="YYYY-MM-DD HH:mm:ss" data-use-current="true" name="row[time]" type="text" value="{:$row.time?datetime($row.time):''}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label class="control-label col-xs-12 col-sm-2">{:__('Agentid')}:</label>
+        <div class="col-xs-12 col-sm-8">
+            <input id="c-agentId" data-rule="required" class="form-control" name="row[agentId]" type="text" value="{$row.agentId|htmlentities}">
+        </div>
+    </div>
+    <div class="form-group layer-footer">
+        <label class="control-label col-xs-12 col-sm-2"></label>
+        <div class="col-xs-12 col-sm-8">
+            <button type="submit" class="btn btn-success btn-embossed disabled">{:__('OK')}</button>
+            <button type="reset" class="btn btn-default btn-embossed">{:__('Reset')}</button>
+        </div>
+    </div>
+</form>

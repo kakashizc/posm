@@ -26,11 +26,16 @@ class Dpos extends Api
 
         $this->key = '755d110bk03jrisn383hl3ns3desKeyPart1';
 
-        $this->desKey = "k03jrisn383hl3ns";
+       //$this->desKey = "k03jrisn383hl3ns";
+        $this->desKey = "2ow4flqoi3mc42hi";
 
-        $this->shakey = "lsj452lh2ns2cj3ss3hf5k3b3ms3n31k";
+        //$this->shakey = "lsj452lh2ns2cj3ss3hf5k3b3ms3n31k";
+        $this->shakey = "3iguh34nfwivns348hfiw8kc34khto93";
 
-        $this->public_key = 'MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAM9FI5xYRWZJcQKkHPYcYIrZM+jsc+kvAtXusbXyM4Aito+P3XNTMvyAPyu8B4a0Kgfe36i70hprV04Fr6xbaGUCAwEAAQ==';
+        //$this->public_key = 'MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAM9FI5xYRWZJcQKkHPYcYIrZM+jsc+kvAtXusbXyM4Aito+P3XNTMvyAPyu8B4a0Kgfe36i70hprV04Fr6xbaGUCAwEAAQ==';
+        $this->public_key = 'MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAKGbgO0f0wiaYMc+cyL+RuSRYhRqQN8GNa+ZSF/WTnNd+hSWaM7M8kMNzogaqQYOyNthmGATJss0WfCafTR99SkCAwEAAQ==';
+
+        //Sign=ysjf.bpos
     }
 
     /*

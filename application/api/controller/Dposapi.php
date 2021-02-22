@@ -17,9 +17,18 @@ use think\Exception;
 use app\common\controller\Redis;
 
 /*
+     * 测试环境的版本数据 :
      * 交易测试密文:{"one":"PtFtbxTKNDY+o9hIXwCrSOpWxyzxOUBS5uKGDHb0pn9eqDblhEoX/tHpMxWJhmfKT/9QtsFitnCM6znIqQ2lhw==","two":"uKyIovE3KG6b5dfJikXQ3Wa1CzXMSFOzn2A6iSY6IukNrMFBeJoz2IroGMkcmKE95e3p8/vqh5lQWAMNV3wF2aLNit+Nh3Pzpe9H453nzOfCsPjmbeKept5wndC28QIUyCGP89fRM+C9h33fl4SyTj5BRXCeweCZehMktlroEDzvmnRoVov83R0hAYJ8Dmw8riffGEulOiYxQJDQTQSIFeMjd9YvUlQ5Uzi4qvZfjnQjYJFNrtYAVaC0T8XuSJHh5yLYN/Dih7T5lKj3X9zOcEgXxah8VqYBQJwC9fML9Tbw1K7xxl1HlXXIUx1XoD+fZB2UXGv9ekymnveQXIeKClpDZj5JEmWTMvCY91O/rYDgfXuxb5AWpCtdq0iP4xfWvvGel+62pxo6g6fs002F3ptoKUugqZt0X7p/1ceZ2ryaNttPXFg6vJX+Z2qJq9PVgvZd+ACOKE3W0rniPSl9fjAMhUmpgdm9vcahsaeCtIhi0FVp3kQN5pJ5wRL1N1xMT4PP0gp0ZfNbDjESk3Rkiyz7BRmMhrJpZ2cnNcnulLLV1DaMv5vaLAZHjLzwnyQ2zf2SFYk9e7MxlW7ImBJUuxt/1urLP/HdG4a5SaOzyA60/of/X6DFtF4t7SxwSgy/wS+uaDAFjqKq4cV3W0UxQRzioid2AGNsHGo8j9cUiBL+ACRwmtWHasQhZekeuP1qU3/JfcoggT4i0c1rOdP3e1kEsSUmaUh9hAn1xhQZbRU5LzMzG4xq4w==","three":"cfe0732aa1e2c88fe2400879ab734f1c726f5df0"}
-     * 绑定终端测试密文:{"one":"yJrrFErnz3qfNIEn6aGDImX6CBaENJhTnx7hbkrvD1yWny/BU0mNvkmqN9GKnGYwNHhs3rC+OuRChTaxFCnbrw==","two":"b9c+ZcFHuTI=","three":"d7a8e7ca98eeb3b9f9dd7666a538bae065661961"}
+     * 绑定中断测试密文: {"one":"lOiRGoVaBQfNeAJpRdzF22BpuqB3477NWh/eK6AbQW1duu54SaSlKuzTIKcnG1DOBD+UdPI1n4Jw8DaV3aAPOA==","two":"TmiPTGtwKXG1v0UIbvNeADeTD496mO5Y/8VcfVHk0iKGlLwyLALRiDX3i6qM5r1pzggJ1WqKCISUereMIcUnKvowiH5T9hf6NpAQpgXCKFnToWbTGtp2Nu0+KgPPvmgTPSD0ITkydcsDhgRpUpHRXW9hWvjmPAHSAMB1cEWIHydjqLi5m5yH29qxB4WhLSrN2/Q1KXn/3Iw4dTC0AlkuHQroaFkaVlL9l266JLgLCMcvSYRg7ry7lBefG/z+9UlGE01eZ2U+vs6xUpEyPfU9BanfuL0TAIkewP6xG4lks7XoOg+UZo/8Vu+lJGe+ZRgD2Qddno8LLhvt4MQjHqBRmo7OPYYER+UxBAVxBXmcJ8E=","three":"c3108233407d7f70cf652a1a2163a1f477be716a"}
+     * 心跳连接测试密文:{"one":"yJrrFErnz3qfNIEn6aGDImX6CBaENJhTnx7hbkrvD1yWny/BU0mNvkmqN9GKnGYwNHhs3rC+OuRChTaxFCnbrw==","two":"b9c+ZcFHuTI=","three":"d7a8e7ca98eeb3b9f9dd7666a538bae065661961"}
+     *
+     * 生产环境:
+     * 交易测试密文:
+     * 绑定中断测试密文:
+     * 心跳连接测试密文:{"one":"ju/bGJTSBMREffM/ypbZ4cw5Vkj5NYn728dyUEsvCp2CMojQh7sNnl7Nmkeg9C9hA8SWRIuLcLQT3ytHRfnyCA==","two":"CPNXbrYGzpEywjANkAMa+A==","three":"863445f5d19b818139afde4195f87ad3d7a96759"}
      * */
+
+
 class Dposapi extends Api
 {
     protected $noNeedLogin = ['*'];

@@ -30,6 +30,30 @@ class User extends Api
     }
 
     /*
+    * 本月新增客户 和 我的机器
+    *
+    * */
+    public function newm()
+    {
+        $uid = $this->_uid;
+        $timestamp = strtotime( date('Y-m',time()) );
+        $start_time = date( 'Y-m-1 00:00:00', $timestamp );
+        $mdays = date( 't', $timestamp );
+        $end_time = date( 'Y-m-' . $mdays . ' 23:59:59', $timestamp );
+        $stime = strtotime($start_time);
+        $etime = strtotime($end_time);
+        $data['mon'] = Db::name('auser')->whereTime('ctime',[$stime,$etime])->where('pid',$uid)->count();
+        //机具总数
+        $data['num'] = Db::name('agoods_sn')->where('u_id',$uid)->count();
+        //已激活机具(伪激活) 设计图中的已激活机具
+        $data['wei'] = Db::name('agoods_sn')->where('u_id',$uid)->where('status','1')->count();
+        //已激活机具(真激活) 设计图中的达标总数
+        $data['zhen'] = Db::name('agoods_sn')->where('u_id',$uid)->where('status','2')->count();
+        //商户总数 和 累计代理商 先用这个 ， 我的下级总数
+        $data['sons'] = Db::name('auser')->where('pid',$uid)->count();
+        $this->success('成功',$data,'0');
+    }
+    /*
      * 我的信息
      * */
     public function myinfo()

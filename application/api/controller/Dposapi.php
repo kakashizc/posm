@@ -114,7 +114,7 @@ class Dposapi extends Api
     public function heart()
     {
         $arr = $this->des();
-        if($arr[0] == '123456'){
+        if($arr[0] == 'ysjf.bpos'){
             $return['resultContent'] = '心跳连接成功';
             $return['resultCode'] = '0000';
             return json_encode($return,JSON_UNESCAPED_UNICODE);

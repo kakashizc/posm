@@ -35,7 +35,7 @@ class Dpos extends Api
         //$this->public_key = 'MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAM9FI5xYRWZJcQKkHPYcYIrZM+jsc+kvAtXusbXyM4Aito+P3XNTMvyAPyu8B4a0Kgfe36i70hprV04Fr6xbaGUCAwEAAQ==';
         $this->public_key = 'MFwwDQYJKoZIhvcNAQEBBQADSwAwSAJBAKGbgO0f0wiaYMc+cyL+RuSRYhRqQN8GNa+ZSF/WTnNd+hSWaM7M8kMNzogaqQYOyNthmGATJss0WfCafTR99SkCAwEAAQ==';
 
-        //Sign=ysjf.bpos
+        //Sign=ysjf.bpos 心跳测试,以前是123456
     }
 
     /*

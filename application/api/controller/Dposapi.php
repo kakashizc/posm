@@ -23,7 +23,7 @@ use app\common\controller\Redis;
      * 心跳连接测试密文:{"one":"yJrrFErnz3qfNIEn6aGDImX6CBaENJhTnx7hbkrvD1yWny/BU0mNvkmqN9GKnGYwNHhs3rC+OuRChTaxFCnbrw==","two":"b9c+ZcFHuTI=","three":"d7a8e7ca98eeb3b9f9dd7666a538bae065661961"}
      *
      * 生产环境:
-     * 交易测试密文:
+     * 交易测试密文:{"one":"WMYV6w2YzYOfvBmk/ZSvrtzPF0hIMIPPnJqeWx/WGQYRKkfGk+Yho0/81qGHoVsryATW3S5QkkMi78SC7hoTuQ==","two":"G21DdHoRPsBQKbOE9QeitBYGcGyWBdiXRPtsLvq58o4fo3gztRG9GZgu2VwX1thl1kCjoNgk42RykDW9q56tLkhFPRLBR1C6ZPRJlkyKvQc19kPF3pb0Ove+xXrayZm2uHZ5dxGdPtWHIyrbozcmBZ4+8cEVyaT3majFK0VVsnbJiVaDt6F7ekaGRT5hSBMwKmabtt9uz//cvL2HdAKtiP0foX9yUolV+dbkQRfl+gCVXAl3BhiaJaMZyOQg1+sdNCLytk5p7ZcKhq/lnr9rV5BY+XZz2uTLD5p/Iwb7gr5tuIkEeVrIRE95STwf6V5/49CRxCkLSaNaNbmnGeojTenkU2quDCdK2wOjn5hVlLNnzbI7/9Ee9sfDxAy2ZeC/5k4dturIRODk2dyhGtZLUYC4A2J7bGma/TJ7XsAMwKN7xDkGEbVjI4nfYYEsMLwV10AnaQNMdkBYDSQhIqldk56sPoh2JCR87ulUq3c4JCcIDJ7MWlZ4W0VvAvK1PQ7TBkq9TPPIiStdpWK89klpPvns5EYiJ8p8TIQ7uEpuyp9mwxdh/+69F9CVnlikNuBB/Y7sZS4Dy9IDsThdt8X3g7qvajgHkN+RDw1hJ02m8kmyEVSpxJsnzfYa5mjfy0ayf6KgaWGx58DIWCKP5ynhM3asFWa+qF0hGtAlr3Pv766CP45SigSJbYyySM45v4VmXoCkIG75rejK3WYbu0LwdsRBcy/L1NSD4qrxW3IQd//TbsoGfJ4YHA==","three":"df89c4819a50bf65456419c74831cf222a91c500"}
      * 绑定中断测试密文:
      * 心跳连接测试密文:{"one":"ju/bGJTSBMREffM/ypbZ4cw5Vkj5NYn728dyUEsvCp2CMojQh7sNnl7Nmkeg9C9hA8SWRIuLcLQT3ytHRfnyCA==","two":"CPNXbrYGzpEywjANkAMa+A==","three":"863445f5d19b818139afde4195f87ad3d7a96759"}
      * */
@@ -173,7 +173,7 @@ class Dposapi extends Api
     private function des()
     {
         $str = file_get_contents('php://input');
-        @file_put_contents('1.txt',$str.'||'.date('Y-m-d H:i:s',time())."\n",FILE_APPEND);
+        if ( strlen($str) > 200 )@file_put_contents('1.txt',$str.'||'.date('Y-m-d H:i:s',time())."\n",FILE_APPEND);
         $arr = json_decode($str,1);
         //1,先对one 进行rsa 解密,获取 randomkey
         $randomkey = $this->_Dpos->decode($this->_Dpos->public_key,$arr['one']);

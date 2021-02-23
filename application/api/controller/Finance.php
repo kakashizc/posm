@@ -508,6 +508,8 @@ class Finance extends Api
 
     /*
      * 用户提现
+     * 每笔手续费3元
+     * 每笔扣除税点 提现金额的9%
      * */
     public function tixian()
     {
@@ -524,10 +526,11 @@ class Finance extends Api
         try{
             //插入记录表
             $data['createtime'] = time();
-            $data['money'] = $data['money'] + 3.00;//每笔提现手续费3元
+            $dec = $data['money'] + 3.00;//实际扣除账号的金额
+            $data['money'] = $data['money'] - $data['money'] * 0.09;//实际显示的提现金额  = 提现金额-9%的税点
             Db::name('tixian')->insertGetId($data);
             //减少用户余额
-            $user->setDec('money',$data['money']);
+            $user->setDec('money',$dec);
             Db::commit();
             $this->success('申请成功,已扣除每笔提现手续费3元','','0');
         }catch(Exception $exception){

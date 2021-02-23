@@ -1,0 +1,77 @@
+
+<!-- bootstrap样式表 -->
+<link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- 时间选择器样式表 -->
+<link href="https://cdn.bootcss.com/bootstrap-datetimepicker/4.17.47/css/bootstrap-datetimepicker.min.css" rel="stylesheet">
+
+
+<!-- jquery -->
+<script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+
+<!-- bootstrap脚本 -->
+<script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+<!-- 时间选择器前置脚本 -->
+<script src="https://cdn.bootcss.com/moment.js/2.22.1/moment-with-locales.min.js"></script>
+
+<!-- 时间选择器核心脚本 -->
+<script src="https://cdn.bootcss.com/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
+
+
+<style>
+    .tab-content > .chart {
+        padding: 10px;
+    }
+</style>
+
+
+<div class="row">
+    <!-- Left col -->
+    <section class="col-lg-12 connectedSortable">
+        <!-- Custom tabs (Charts with tabs)-->
+        <div class="nav-tabs-custom charts-custom">
+
+            <div class="tab-content no-padding">
+                <!-- Morris chart - Sales -->
+                <div class="chart tab-pane active" id="line-chart" style="position: relative; height: 500px;"></div>
+                <div class="chart tab-pane" id="area-chart" style="position: relative; height: 500px;"></div>
+            </div>
+        </div>
+
+    </section>
+
+</div>
+<form class="well form-inline margin-top-20" method="post" action="{:url('count/index')}" style="margin-top: 20px">
+    开始时间:
+    <input id="datetime" class="form-control datetimepicker"
+           data-date-format="YYYY-MM-DD hh:mm:ss"
+           data-use-current="true"
+           type="text"
+           placeholder="开始时间"
+           name="stime"
+           AUTOCOMPLETE="off" style="margin-right: 55px;">
+    结束时间:
+    <input id="datetime2" class="form-control datetimepicker"
+           data-date-format="YYYY-MM-DD hh:mm:ss"
+           data-use-current="true"
+           type="text"
+           placeholder="结束时间"
+           name="etime"
+           AUTOCOMPLETE="off" style="margin-right: 55px;">
+    <input type="submit" class="btn btn-primary" value="搜索"/>
+</form>
+<script>
+
+    var datas = {
+        totals:{$totals},
+        users:{$users},
+        records:{$records},
+    };
+    $("#datetime").datetimepicker({
+        locale: moment.locale('zh-CN')
+    });
+    $("#datetime2").datetimepicker({
+        locale: moment.locale('zh-CN')
+    });
+</script>

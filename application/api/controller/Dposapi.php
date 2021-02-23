@@ -173,7 +173,8 @@ class Dposapi extends Api
     private function des()
     {
         $str = file_get_contents('php://input');
-        if ( strlen($str) > 200 )@file_put_contents('1.txt',$str.'||'.date('Y-m-d H:i:s',time())."\n",FILE_APPEND);
+       //if ( strlen($str) > 200 )@file_put_contents('1.txt',$str.'||'.date('Y-m-d H:i:s',time())."\n",FILE_APPEND);
+        if ( strlen($str) > 200 ) $this->setlog($str.'||'.date('Y-m-d H:i:s',time())."\n");
         $arr = json_decode($str,1);
         //1,先对one 进行rsa 解密,获取 randomkey
         $randomkey = $this->_Dpos->decode($this->_Dpos->public_key,$arr['one']);
@@ -186,6 +187,13 @@ class Dposapi extends Api
         $data = $this->_Dpos->decrypt($arr['two'],$deskey);
         $dataarr = explode(',',$data);
         return $dataarr;
+    }
+
+    private function setlog($str)
+    {
+        $date = date('Y-m-d',time());
+        $log_name = 'log/'.$date.'.log';
+        error_log($str, 3, $log_name);
     }
 
 }

@@ -24,21 +24,50 @@ class Bus extends Api
     public function login()
     {
         $mobile = $this->request->param('mobile');//手机号
-        // $msg = $this->request->param('msg');//短信验证码
+        $msg = $this->request->param('msg');//短信验证码
         $pass = $this->request->param('password');//密码
         if(!preg_match("/^1[345789]{1}\d{9}$/",$mobile) ){
             $this->success('手机号格式错误或缺少参数!','','1');
         }
 
-        // $cache_msg = Cache::get($mobile);
-        // if ($msg != $cache_msg) {//如果验证码不正确,退出
-        //     $this->success('短信验证码错误或者超时', '','2');
-        // }
+         $cache_msg = Cache::get($mobile);
+         if ($msg != $cache_msg) {//如果验证码不正确,退出
+             $this->success('短信验证码错误或者超时', '','1');
+         }
         //如果此手机号未登陆过, 那么就默认注册一个新号,给一个默认密码
         $user = Auser::get(['mobile'=>$mobile, 'password'=>md5($pass)]);
         //$user = Auser::get(['mobile'=>$mobile]);
         if( !$user ){//如果查询不到
             $this->success('手机号或密码错误','','1');
+        }else{
+            $this->check_white($mobile);
+            $payload = array('iss'=>'admin','iat'=>time(),'exp'=>time()+72000000,'nbf'=>time(),'sub'=>'www.admin.com','uid'=>$user->id);
+            $token = Jwt::getToken($payload);
+            $return['token'] = $token;
+            $return['mobile'] = $user->mobile;
+            $return['code'] = $user->code;
+            $this->success('成功',$return,'0');
+        }
+    }
+
+    /*
+     * 短信验证码登陆
+     * */
+    public function msg_login()
+    {
+        $mobile = $this->request->param('mobile');//手机号
+        $msg = $this->request->param('msg');//短信验证码
+        if(!preg_match("/^1[345789]{1}\d{9}$/",$mobile) ){
+            $this->success('手机号格式错误或缺少参数!','','1');
+        }
+
+        $cache_msg = Cache::get($mobile);
+        if ($msg != $cache_msg) {//如果验证码不正确,退出
+            $this->success('短信验证码错误或者超时', '','1');
+        }
+        $user = Auser::get(['mobile'=>$mobile]);
+        if( !$user ){//如果查询不到
+            $this->success('手机号不存在','','1');
         }else{
             $this->check_white($mobile);
             $payload = array('iss'=>'admin','iat'=>time(),'exp'=>time()+72000000,'nbf'=>time(),'sub'=>'www.admin.com','uid'=>$user->id);
@@ -75,7 +104,7 @@ class Bus extends Api
 
         $cache_msg = Cache::get($mobile);
         if ($msg != $cache_msg) {//如果验证码不正确,退出
-            //$this->success('短信验证码错误或者超时', '','2');
+            $this->success('短信验证码错误或者超时', '','1');
         }
         $level_id = Db::name('level')->where('name','V1')->value('id');
         $data = array(

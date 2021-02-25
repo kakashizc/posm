@@ -89,11 +89,11 @@ class User extends Api
         }
 
         //验证手机短信验证码,暂时不用
-//        $msg = $this->request->request('msg');//短信验证码
-//        $cache_msg = Cache::get($phone);
-//        if ($msg != $cache_msg) {//如果验证码不正确,退出
-//            $this->success('短信验证码错误或者超时', '','2');
-//        }
+        $msg = $this->request->request('msg');//短信验证码
+        $cache_msg = Cache::get($phone);
+        if ($msg != $cache_msg) {//如果验证码不正确,退出
+            $this->success('短信验证码错误或者超时', '','1');
+        }
 
         $user = Auser::get($this->_uid);
         if (!$user){

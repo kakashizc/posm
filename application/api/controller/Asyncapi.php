@@ -47,6 +47,9 @@ class Asyncapi extends Api
         set_time_limit(0);
         ignore_user_abort(true);//设置与客户机断开是否会终止执行
         $new = $this->request->param();
+        if (!isset($new['agentNo']) ){
+            return 0;
+        }
         $goods = AgoodsSn::get(['sn'=>$new['snNo']]);
         $is = AgoodsSn::get(['ac_id'=>$goods->u_id]);//如果当前用户已经绑定了一个ac_id,就不再绑定了,也就是一个用户一个pos机具
         if (!$is){
@@ -67,6 +70,9 @@ class Asyncapi extends Api
         set_time_limit(0);
         ignore_user_abort(true);//设置与客户机断开是否会终止执行
         $arr = $this->request->param();
+        if ( !isset($arr['agentNo']) ){
+            return 0;
+        }
         /**
          * 90个工作日内, 刷够5000元, 返回给88元的机具采购费用(单笔或者多笔累计)
          * 手续费为万60的 才算入5000元累计内 支付方式 手续费为60的是: 刷卡 02 ,插卡 05

@@ -6,7 +6,7 @@ namespace app\api\controller;
 use app\common\controller\Api;
 use app\common\controller\SignatureHelper;
 use think\Cache;
-
+header('Access-Control-Allow-Origin:*');
 class Msg extends Api{
     protected $noNeedLogin = ['*'];
     protected $noNeedRight = ['*'];
@@ -18,15 +18,15 @@ class Msg extends Api{
             $this->success('手机格式错误','','1');
         }
         $code = mt_rand(10000,99999);
-        $params = array ();
+        $params = array();
 
         // *** 需用户填写部分 ***
         // fixme 必填：是否启用https
         $security = false;
 
         // fixme 必填: 请参阅 https://ak-console.aliyun.com/ 取得您的AK信息
-        $accessKeyId = "LTAI4FyAeSRgShwvuDMSBJXW";
-        $accessKeySecret = "qfNegNcssEnuP8vcCEu9LaCrW9B9u7";
+        $accessKeyId = "";//阿里云不让往git传, 这里就不传了, 具体在哪 自己去查
+        $accessKeySecret = "";
 
         // fixme 必填: 短信接收号码
         $params["PhoneNumbers"] = $phone;
@@ -67,7 +67,7 @@ class Msg extends Api{
             Cache::set($phone,$code,600);
             $this->success('成功','','0');
         }else{
-            $this->success('失败','','1');
+            $this->success('失败',$content,'1');
         }
     }
 }

@@ -70,7 +70,7 @@ class Asyncapi extends Api
         set_time_limit(0);
         ignore_user_abort(true);//设置与客户机断开是否会终止执行
         $arr = $this->request->param();
-        if ( !isset($arr['agentNo']) ){
+        if (!isset($arr['agentNo']) ){
             return 0;
         }
         /**
@@ -122,6 +122,9 @@ class Asyncapi extends Api
     {
         //根据snNo 查询用户u_id->查询用户信息
         $uid = AgoodsSn::where(['sn'=>$arr['snNo']])->value('ac_id');
+        if (!$uid){//如果机具被撤回了,ac_id会被清空,不存在了,就不进行返佣金等操作了
+            Db::rollback();exit;
+        }
         $user = Auser::where('id',$uid)->find();
         //1,先根据自己的等级, 返给万几的佣金,同时累计业绩
         Db::startTrans();
@@ -152,7 +155,7 @@ class Asyncapi extends Api
     {
         $mylevel = Level::get(['id'=>$user['level_id']]);
         $broker = $mylevel->feed;//用户等级对应的分润比例 -> 元/万元
-        $insert['u_id'] = $user['id'];
+        
         if ($type == 2){
             $uid = $user['id'];
             //如果是别人刷卡,获取佣金为自己等级对应的分润
@@ -170,9 +173,12 @@ class Asyncapi extends Api
             if ($parent_feed > $son_feed){//如果上级＞下级佣金比例，那么进行分润相减
                 $ex = $parent_feed - $son_feed;
                 $bro = ($ex*$money)/10000;
+            }else{
+                $bro = 0;
             }
         }
-        $insert['card_id'] = $uid;
+        $insert['u_id'] = $uid;
+        $insert['card_id'] = $user['id'];
         $insert['status'] = $type;
         $insert['ctime'] = time();
         $insert['date_d'] = date('Y-m-d',time());//年月日
@@ -191,7 +197,7 @@ class Asyncapi extends Api
                     $agoods->status = '1';//修改为伪激活
                     $agoods->save();
                 }
-                if ($userinfo->five >= 5000 ){
+                if ($userinfo->five >= 5000 && $userinfo->reback == '0' ){
                     //返回给88机具钱,同时插入一条记录
                     $this->eight($uid);
                     //修改机具状态为真激活
@@ -204,6 +210,10 @@ class Asyncapi extends Api
             //给自己增加总业绩金额
             $userinfo = Auser::get($user['id']);
             $userinfo->all_trade = $userinfo->all_trade+$money;
+             //给用户金额增加对应的佣金
+            $userinfo->money = $userinfo->money+$bro;
+              //增加总收益
+            $userinfo->total = $userinfo->total+$bro;
             $userinfo->save();
             //判断是否升级
             $this->isUp($user['id']);
@@ -211,6 +221,10 @@ class Asyncapi extends Api
             //给上级增加总业绩
             $userinfo = Auser::get($user['pid']);
             $userinfo->all_trade = $userinfo->all_trade+$money;
+             //给用户金额增加对应的佣金
+            $userinfo->money = $userinfo->money+$bro;
+              //增加总收益
+            $userinfo->total = $userinfo->total+$bro;
             $userinfo->save();
             //判断是否升级
             $this->isUp($user['pid']);
@@ -220,8 +234,11 @@ class Asyncapi extends Api
     //插入一条返88的机具记录
     private function eight($uid)
     {
+        //修改为上级获取88元机具钱
+        $user = Auser::get($uid);
+        $pid = $user->pid;
         $insert['card_id'] = $uid;
-        $insert['u_id'] = $uid;
+        $insert['u_id'] = $pid;
         $insert['status'] = 3;
         $insert['ctime'] = time();
         $insert['date_d'] = date('Y-m-d',time());//年月日
@@ -229,6 +246,14 @@ class Asyncapi extends Api
         $insert['money'] = 88.00;
         $insert['trade_money'] = 0.00;
         Feed::create($insert);
+        //修改reback字段为 已返88元 , 并且用户金额增加88元
+        $userinfo = Auser::get($pid);
+        $userinfo->money = $userinfo->money + 88;
+        $userinfo->total = $userinfo->total + 88;
+        $userinfo->save();
+        //刷卡人 返给上级88的记录修改为已返回
+        $user->reback = 1;
+        $user->save();
     }
 
     /*

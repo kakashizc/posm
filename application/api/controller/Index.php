@@ -12,6 +12,7 @@ use think\Db;
 use think\Request;
 use app\admin\model\Auser;
 use app\admin\model\Order as AOrder;
+use think\cache;
 /**
  * 首页接口
  */
@@ -38,7 +39,38 @@ class Index extends Api
             $this->success('无','','1');
         }
     }
+    /*
+    * 短信修改密码
+    * */
+    public function rep()
+    {  
+        $phone = $this->request->param('mobile');
+        
+        $pass = $this->request->param('password');
+        if ( !$pass || !$phone || !preg_match("/^1[345789]{1}\d{9}$/",$phone) ) {
+            $this->success('缺少参数或手机号格式错误','','1');
+        }
 
+        //验证手机短信验证码,暂时不用
+        $msg = $this->request->param('msg');//短信验证码
+        $cache_msg = Cache::get($phone);
+        if ($msg != $cache_msg) {//如果验证码不正确,退出
+            $this->success('短信验证码错误或者超时', '','1');
+        }
+
+        $user = Auser::get(['mobile'=>$phone]);
+        if (!$user){
+            $this->success('账号不存在','','1');
+        }
+        $user->mobile = $phone;
+        $user->password = md5($pass);
+        $res = $user->save();
+        if ($res){
+            $this->success('成功','','0');
+        }else{
+            $this->success('失败','','1');
+        }
+    }
     /*
      * 获取机具
      *
@@ -171,7 +203,46 @@ class Index extends Api
         $data['content'] = str_replace('src="', 'src="http://' . $_SERVER['HTTP_HOST'], $data['content']);
         $this->success('获取成功',$data,'0');
     }
-
+    /*
+     * 隐私协议
+     * */
+    public function xyys()
+    {
+        $data = Db::name('xyys')->find();
+        $data['content'] = str_replace('src="', 'src="http://' . $_SERVER['HTTP_HOST'], $data['content']);
+        $this->success('获取成功',$data,'0');
+    }
+    /*
+     * 展业培训
+     * */
+    public function zy()
+    {
+        $data = Db::name('zy')->find();
+        $data['content'] = str_replace('src="', 'src="http://' . $_SERVER['HTTP_HOST'], $data['content']);
+        $this->success('获取成功',$data,'0');
+    }
+    /*
+     * 首页推荐活动
+     * */
+    public function rec()
+    {
+        $data = Db::name('rec')->field('id,image')->select()->toArray();
+        foreach ($data as $k=>$v){
+            //$data[$k]['content'] = str_replace('src="', 'src="http://' . $_SERVER['HTTP_HOST'], $v['content']);
+            $data[$k]['image'] = IMG.$v['image'];
+        }
+        $this->success('获取成功',$data,'0');
+    }
+    /*
+     * 首页推荐活动->内容
+     * */
+    public function rec_content()
+    {
+        $id = $this->request->param('id');
+        $data = Db::name('rec')->field('content')->find($id);
+        $data['content'] = str_replace('src="', 'src="http://' . $_SERVER['HTTP_HOST'], $data['content']);
+        $this->success('获取成功',$data,'0');
+    }
     /*
      * 意见反馈
      * */
@@ -185,5 +256,15 @@ class Index extends Api
         }else{
             $this->success('反馈失败','','1');
         }
+    }
+    
+    /*
+     * 获取海报
+     * */
+    public function haibao()
+    {
+        $hai = Db::name('haibao')->find();
+        $data['image'] = IMG.$hai['image'];
+        $this->success('成功',$data,'0');
     }
 }

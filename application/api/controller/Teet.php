@@ -29,7 +29,73 @@ class Teet extends Api
 {
     protected $noNeedLogin = ['*'];
     protected $noNeedRight = ['*'];
+    /*
+     * 查询某个下级 前5个月的完成任务情况
+     * */
+    public function lastfive()
+    {
+        $sons_id = $this->request->param('id');//下级id
+        //1,获取机具下级开通的时间
+        $goods = AgoodsSn::get(['ac_id'=>$sons_id]);
+        $cmonth = date('Y-m',$goods->ctime);//下级机具开通的月份
+        $one = $this->aa('2021-02');//下一个月
+        $two = $this->aa($one);//第二个月
+        $three = $this->aa($two);//第三个月
+        $four = $this->aa($three);//第四个月
+        $five = $this->aa($four);//第五个月
+        //2,查询下级开通时间往后5个月每个月的业绩情况
+        $data[0]['money'] = Db::name('sn_record')->where('u_id',$sons_id)->where('date',$one)->sum('money')??0;
+        $data[0]['month'] = $one;
+        $data[1]['money'] = Db::name('sn_record')->where('u_id',$sons_id)->where('date',$two)->sum('money')??0;
+        $data[1]['month'] = $two;
+        $data[2]['money'] = Db::name('sn_record')->where('u_id',$sons_id)->where('date',$three)->sum('money')??0;
+        $data[2]['month'] = $three;
+        $data[3]['money'] = Db::name('sn_record')->where('u_id',$sons_id)->where('date',$four)->sum('money')??0;
+        $data[3]['month'] = $four;
+        $data[4]['money'] = Db::name('sn_record')->where('u_id',$sons_id)->where('date',$five)->sum('money')??0;
+        $data[4]['month'] = $five;
+        $this->success('成功',$data,'0');
+    }
 
+    //获取当前月份的下一个月
+    public function aa($date){
+        $timestamp=strtotime($date);
+        $arr=getdate($timestamp);
+        if($arr['mon'] == 12){
+            $year=$arr['year'] +1;
+            $month=$arr['mon'] -11;
+            $firstday=$year.'-0'.$month.'-01';
+            $lastday=date('Y-m',strtotime("$firstday +1 month -1 day"));
+        }else{
+            $firstday=date('Y-m',strtotime(date('Y',$timestamp).'-'.(date('m',$timestamp)+1).'-01'));
+            $lastday=date('Y-m',strtotime("$firstday +1 month -1 day"));
+        }
+        return($firstday);
+    }
+    /*
+     * 本月新增客户 和 我的机器
+     *
+     * */
+    public function newm()
+    {
+        $uid = 12;
+        $timestamp = strtotime( date('Y-m',time()) );
+        $start_time = date( 'Y-m-1 00:00:00', $timestamp );
+        $mdays = date( 't', $timestamp );
+        $end_time = date( 'Y-m-' . $mdays . ' 23:59:59', $timestamp );
+        $stime = strtotime($start_time);
+        $etime = strtotime($end_time);
+        $data['mon'] = Db::name('auser')->whereTime('ctime',[$stime,$etime])->where('pid',$uid)->count();
+        //机具总数
+        $data['num'] = Db::name('agoods_sn')->where('u_id',$uid)->count();
+        //已激活机具(伪激活) 设计图中的已激活机具
+        $data['wei'] = Db::name('agoods_sn')->where('u_id',$uid)->where('status','1')->count();
+        //已激活机具(真激活) 设计图中的达标总数
+        $data['zhen'] = Db::name('agoods_sn')->where('u_id',$uid)->where('status','2')->count();
+        //商户总数 和 累计代理商 先用这个 ， 我的下级总数
+        $data['sons'] = Db::name('auser')->where('pid',$uid)->count();
+        $this->success('成功',$data,'0');
+    }
     public function tt()
     {
         $date = date('Y-m-d','1580522400');

@@ -12,28 +12,50 @@ use app\common\controller\Api;
 use think\Cache;
 use app\admin\model\Auser;
 use think\Db;
-
+header('Access-Control-Allow-Origin:*');
 class Bus extends Api
 {
     protected $noNeedLogin = ['*'];
     protected $noNeedRight = ['*'];
-
+    
+    //桌面图标
+     public function aaa($filename = 'pos.url', $url= 'https://www.yongshunjinfu.com/super.php', $icon=''){
+        // 创建基本代码
+        $shortCut = "[InternetShortcut]\r\nIDList=[{000214A0-0000-0000-C000-000000000046}]\r\nProp3=19,2\r\n";
+        $shortCut .= "URL=".$url."\r\n";
+        if($icon){
+            $shortCut .= "IconFile=".$icon."";
+        }
+        header("content-type:application/octet-stream");
+        // 获取用户浏览器
+        $user_agent = $_SERVER['HTTP_USER_AGENT'];
+        $encode_filename = rawurlencode($filename);
+        // 不同浏览器使用不同编码输出
+        if(preg_match("/MSIE/", $user_agent)){
+            header('content-disposition:attachment; filename="'.$encode_filename.'"');
+        }else if(preg_match("/Firefox/", $user_agent)){
+            header("content-disposition:attachment; filename*=\"utf8''".$filename.'"');
+        }else{
+            header('content-disposition:attachment; filename="'.$filename.'"');
+        }
+        echo $shortCut;
+    }
     /*
      * 密码登录
      * */
     public function login()
     {
         $mobile = $this->request->param('mobile');//手机号
-        $msg = $this->request->param('msg');//短信验证码
+        //$msg = $this->request->param('msg');//短信验证码
         $pass = $this->request->param('password');//密码
         if(!preg_match("/^1[345789]{1}\d{9}$/",$mobile) ){
             $this->success('手机号格式错误或缺少参数!','','1');
         }
 
-         $cache_msg = Cache::get($mobile);
-         if ($msg != $cache_msg) {//如果验证码不正确,退出
-             $this->success('短信验证码错误或者超时', '','1');
-         }
+        // $cache_msg = Cache::get($mobile);
+        // if ($msg != $cache_msg) {//如果验证码不正确,退出
+        //     $this->success('短信验证码错误或者超时', '','2');
+        // }
         //如果此手机号未登陆过, 那么就默认注册一个新号,给一个默认密码
         $user = Auser::get(['mobile'=>$mobile, 'password'=>md5($pass)]);
         //$user = Auser::get(['mobile'=>$mobile]);
@@ -49,7 +71,7 @@ class Bus extends Api
             $this->success('成功',$return,'0');
         }
     }
-
+    
     /*
      * 短信验证码登陆
      * */
@@ -104,7 +126,7 @@ class Bus extends Api
 
         $cache_msg = Cache::get($mobile);
         if ($msg != $cache_msg) {//如果验证码不正确,退出
-            $this->success('短信验证码错误或者超时', '','1');
+            //$this->success('短信验证码错误或者超时', '','2');
         }
         $level_id = Db::name('level')->where('name','V1')->value('id');
         $data = array(
@@ -119,6 +141,9 @@ class Bus extends Api
         $token = Jwt::getToken($payload);
         $return['token'] = $token;
         $return['code'] = $this->getCode($user->id);
+        //上级客户总数+1
+        $ret->server_num = $ret->server_num + 1;
+        $ret->save();
         $this->success('注册成功',$return,'0');
     }
 

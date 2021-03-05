@@ -56,7 +56,7 @@ class Finance extends Api
             $item['sons'] = Auser::where( ['pid'=>$item['id']] )->count('id');
             $item['vip'] = Level::where( ['id'=>$item['level_id']] )->value('name');
             if ($item['name'] == null) $item['name'] = $item['nickName'];
-            if ( substr($item['avatar'],0,4) != 'http' ){
+            if ( substr($item['avatar'],0,4) != 'http' &&  $item['avatar'] != ''){
                 $item['avatar'] = IMG.$item['avatar'];
             }
             if ( $item['ctime'] > strtotime(date("Y-m-d"),time()) ){
@@ -94,7 +94,7 @@ class Finance extends Api
         $users['money'] = Feed::where('date_m',date('Y-m',time()))->sum('money');
         $users['sons'] = Auser::where( ['pid'=>$users->id] )->count('id');
         $users['vip'] = Level::where( ['id'=>$users->level_id] )->value('name');
-        if ( substr($users->avatar,0,4) != 'http' ){
+        if ( substr($users->avatar,0,4) != 'http'  && $users->avatar != '' ){
             $users->avatar = IMG.$users->avatar;
         }
         if ($users){
@@ -113,7 +113,7 @@ class Finance extends Api
         $uid = $this->_uid;
         $month = $this->request->param('month');
         $page = $this->request->param('page')??1;
-        $num = $this->request->param('num')??5;
+        $num = $this->request->param('num')??10;
         // 用户总余额, 总返佣收益 , 总刷卡收益   余额明细单
         $yue = Auser::get($uid);
         if (!$yue)$this->success('无此用户','','1');
@@ -130,14 +130,33 @@ class Finance extends Api
             }else{
                 $where = ['date_m'=>$month];
             }
-            $list->where(['u_id'=>$uid])->where($where);
+            $list->where(['card_id'=>$uid])->where($where)->where('feed.u_id','eq',$uid);
         }])->page($page,$num)->select()->each(function ($item){
-            if ( substr($item['sons']['avatar'],0,4) != 'http' ){
+            if ( substr($item['sons']['avatar'],0,4) != 'http'  && $item['sons']['avatar'] != ''){
                 $item['sons']['avatar'] = IMG.$item['sons']['avatar'];
             }
             //下级信息
             return $item;
         });
+        //$this->success($data);
+         //查找我的下级刷卡返给我的佣金费用
+        $datas = Feed::where('u_id',$uid)
+            ->alias('f')
+            ->join('auser u','u.id = f.u_id')
+            ->where('f.money','neq','0')
+            ->where('f.status','neq','2')
+            ->field('f.u_id,f.money,f.status,f.trade_money,f.ctime,u.indent_name,u.avatar,u.nickName')
+            ->select()->toArray();
+            
+        foreach ($datas as $k=>$v){
+            if ( substr($v['avatar'],0,4) != 'http'  && $v['avatar'] != ''){
+                $v['avatar'] = IMG.$v['avatar'];
+            }
+            $datas[$k]['sons'] = array();
+            $datas[$k]['sons']['avatar'] =  $v['avatar'];
+            $datas[$k]['sons']['indent_name'] =  $v['indent_name']??$v['nickName'];
+            $data['record'][] = $datas[$k];
+        }
         $this->success('成功',$data,'0');
     }
     /*
@@ -191,7 +210,8 @@ class Finance extends Api
      * */
     public function wait_set()
     {
-        $users = self::son_ungive($this->_uid);
+        //$users = self::son_ungive($this->_uid);
+        $users = self::son_no($this->_uid);
         if ($users){
             $this->success('成功',$users,'0');
         }else{
@@ -204,7 +224,7 @@ class Finance extends Api
     public function wait_set_sel()
     {
         $select = $this->request->param('select');
-        $users = self::son_ungive($this->_uid,$select);
+        $users = self::son_ungive1($this->_uid,$select);
         if ($users){
             $this->success('成功',$users,'0');
         }else{
@@ -215,7 +235,7 @@ class Finance extends Api
     /*
      * 待签约(下级人员购买了pos机, 也划拨了, 但是有pos机还没有进行第一次刷卡未激活 , 把这些用户列出来)
      * */
-    public function wati_sign()
+    public function wati_sign_bak()
     {
         $uid = $this->_uid;
         $datas = Db::name('auser')
@@ -226,7 +246,7 @@ class Finance extends Api
             ->field("u.id,u.mobile,u.indent_name as name,FROM_UNIXTIME(u.ctime,'%Y-%m-%d %H:%i:%s') as ctime,u.avatar")
             ->group('u.id')
             ->select()->each(function($item){
-                if ( substr($item['avatar'],0,4) != 'http' ){
+                if ( substr($item['avatar'],0,4) != 'http'   && $item['avatar'] != ''){
                     $item['avatar'] = IMG.$item['avatar'];
                 }
                 return $item;
@@ -260,27 +280,27 @@ class Finance extends Api
                     $count = bcsub($end,$start);
                 }
                 //插入sn表,并绑定u_id
-                    for ($i=0;$i<=$count;$i++){
-                        if ($i == 0) {
-                            $sn = $start;
-                        }elseif ($i == $count){
-                            $sn = $end;
-                        }else{
-                            $sn = bcadd( $start,"$i");
-                        }
-                        $up['u_id'] = $hid;
-                        $up['ctime'] = $time;
-                        $res = Db::name('agoods_sn')->where('sn',$sn)->update($up);
-                    }
-                    if ($res){
-                        //插入一条划拨机具的记录
-                        self::insert_rec(1);
-                        Db::commit();
-                        $this->success('划拨成功','','0');
+                for ($i=0;$i<=$count;$i++){
+                    if ($i == 0) {
+                        $sn = $start;
+                    }elseif ($i == $count){
+                        $sn = $end;
                     }else{
-                        Db::rollback();
-                        $this->error("划拨失败",'','1');
+                        $sn = bcadd( $start,"$i");
                     }
+                    $up['u_id'] = $hid;
+                    $up['ctime'] = $time;
+                    $res = Db::name('agoods_sn')->where('sn',$sn)->update($up);
+                }
+                if ($res){
+                    //插入一条划拨机具的记录
+                    self::insert_rec(1);
+                    Db::commit();
+                    $this->success('划拨成功','','0');
+                }else{
+                    Db::rollback();
+                    $this->error("划拨失败",'','1');
+                }
 
             }else{//固定的sn号码划拨
                 $sn_str = $this->request->param('sn_arr');//选中机具sn的数组
@@ -424,10 +444,13 @@ class Finance extends Api
             $order_sons = AOrder::where('u_id','IN',$son_ids)->where('status','IN',[1,2,3,4])->column('u_id');
 
             $users = Auser::all(function ($list) use ($order_sons){
-                $list->field('id,mobile,indent_name as name,avatar,ctime')->where('id','IN',$order_sons);
+                $list->field('id,mobile,indent_name as name,avatar,ctime,nickName')->where('id','IN',$order_sons);
             })->each(function ($item){
-                if ( substr($item['avatar'],0,4) != 'http' ){
+                if ( substr($item['avatar'],0,4) != 'http'   && $item['avatar'] != ''){
                     $item['avatar'] = IMG.$item['avatar'];
+                }
+                if ($item['name'] == null){
+                    $item['name'] = $item['nickName'];
                 }
                 return $item;
             });
@@ -453,16 +476,51 @@ class Finance extends Api
                 return false;
             }
             $users = Auser::all(function ($list) use ($order_son){
-                $list->field('id,mobile,indent_name as name,avatar,ctime')->where('id','eq',$order_son);
+                $list->field('id,mobile,indent_name as name,avatar,ctime,nickName')->where('id','eq',$order_son);
             })->each(function ($item){
-                if ( substr($item['avatar'],0,4) != 'http' ){
+                if ( substr($item['avatar'],0,4) != 'http'  && $item['avatar'] != '' ){
                     $item['avatar'] = IMG.$item['avatar'];
+                }
+                if ($item['name'] == null){
+                    $item['name'] = $item['nickName'];
                 }
                 return $item;
             });
             return $users;
         }
 
+    }
+    /*
+     * 我的下级  购买未划拨机具的人员列表
+     * */
+    private static function son_ungive1($uid,$select='')
+    {
+        if ($select == ''){
+            return false;
+        }
+
+        if ( preg_match("/^1[345789]{1}\d{9}$/",$select) ) {
+            //根据手机号查询
+            $where = ['mobile'=>$select];
+        }else{
+            $where = ['indent_name'=>$select];
+        }
+        $son_id = Auser::where($where)->value('id');
+        if (!$son_id){
+            return false;
+        }
+        $users = Auser::all(function ($list) use ($son_id){
+            $list->field('id,mobile,indent_name as name,avatar,ctime,nickName')->where('id','eq',$son_id);
+        })->each(function ($item){
+            if ( substr($item['avatar'],0,4) != 'http'  && $item['avatar'] != '' ){
+                $item['avatar'] = IMG.$item['avatar'];
+            }
+            if ($item['name'] == null){
+                $item['name'] = $item['nickName'];
+            }
+            return $item;
+        });
+        return $users;
     }
 
 
@@ -508,8 +566,6 @@ class Finance extends Api
 
     /*
      * 用户提现
-     * 每笔手续费3元
-     * 每笔扣除税点 提现金额的9%
      * */
     public function tixian()
     {
@@ -528,14 +584,123 @@ class Finance extends Api
             $data['createtime'] = time();
             $dec = $data['money'] + 3.00;//实际扣除账号的金额
             $data['money'] = $data['money'] - $data['money'] * 0.09;//实际显示的提现金额  = 提现金额-9%的税点
+            $data['appuser_id'] = $uid;
             Db::name('tixian')->insertGetId($data);
             //减少用户余额
             $user->setDec('money',$dec);
             Db::commit();
-            $this->success('申请成功,已扣除每笔提现手续费3元','','0');
+            $this->success('申请成功,已扣除每笔提现手续费3元和9%的税','','0');
         }catch(Exception $exception){
             Db::rollback();
             $this->success($exception->getMessage(),'','1');
+        }
+    }
+
+    /*
+     * 待装机->还没有绑定终端的用户列表
+     * */
+    private function son_no($uid,$select='')
+    {
+        if ($select == ''){
+            $son_ids = Auser::where('pid',$uid)->column('id');
+
+            $users = Auser::all(function ($list) use ($son_ids){
+                $list->field("id,mobile,indent_name as name,avatar,FROM_UNIXTIME(ctime,'%Y-%m-%d %H:%i:%s') as ctime,nickName")
+                    ->where('id','IN',$son_ids);
+            })->each(function ($item){
+                $ret = Db::name('agoods_sn')->where('ac_id',$item['id'])->find();
+                if (!$ret){
+                    if ( substr($item['avatar'],0,4) != 'http'  && $item['avatar'] != '' ){
+                        $item['avatar'] = IMG.$item['avatar'];
+                    }
+                    return $item;
+                }
+            });
+            if (sizeof($users) > 0){
+                return $users;
+            }else{
+                return false;
+            }
+        }else{
+            if ( preg_match("/^1[345789]{1}\d{9}$/",$select) ) {
+                //根据手机号查询
+                $where = ['mobile'=>$select];
+            }else{
+                $where = ['indent_name'=>$select];
+            }
+            $son_id = Auser::where($where)->value('id');
+            if (!$son_id){
+                return false;
+            }
+            $users = Auser::all(function ($list) use ($son_id){
+                $list->field('id,mobile,indent_name as name,avatar,ctime,nickName')->where('id','eq',$son_id);
+            })->each(function ($item){
+                $ret = Db::name('agoods_sn')->where('ac_id',$item['id'])->find();
+                if(!$ret){
+                    if ( substr($item['avatar'],0,4) != 'http'  && $item['avatar'] != '' ){
+                        $item['avatar'] = IMG.$item['avatar'];
+                    }
+                    if ($item['name'] == null){
+                        $item['name'] = $item['nickName'];
+                    }
+                    return $item;
+                }
+            });
+            return $users;
+        }
+    }
+    /*
+    * 待签约 -> 注册了,但是没有实名认证的人员,展示电话打电话
+    * */
+    public function wati_sign()
+    {
+        $uid = $this->_uid;
+        $datas = Db::name('auser')
+            ->where('pid',$uid)
+            ->where('status','neq','2')
+            ->field("id,mobile,avatar,FROM_UNIXTIME(ctime,'%Y-%m-%d %H:%i:%s') as ctime")
+            ->select()->each(function($item){
+                if ( substr($item['avatar'],0,4) != 'http' && $item['avatar'] != ''){
+                    $item['avatar'] = IMG.$item['avatar'];
+                }
+                $item['name'] = '未实名';
+                return $item;
+            });
+        if ($datas){
+            $this->success('成功',$datas,'0');
+        }else{
+            $this->success('无','','1');
+        }
+    }
+
+    /*
+    * 我的下级 达标人员列表(已激活机具人员列表)
+    * */
+    public function sonsg()
+    {
+        $uid = $this->_uid;
+        $users = Auser::all(function ($list) use ($uid){
+            $list->field('id,mobile,indent_name as name,avatar,ctime,nickName,level_id')->where('pid',$uid)->where('reback','1');
+        })->each(function ($item){
+             //$item['money'] = Feed::where('date_m',null)->sum('money');
+            $item['money'] = Feed::where('date_m',date('Y-m',time()))->sum('money');
+            $item['sons'] = Auser::where( ['pid'=>$item['id']] )->count('id');
+            $item['vip'] = Level::where( ['id'=>$item['level_id']] )->value('name');
+            if ($item['name'] == null) $item['name'] = $item['nickName'];
+            if ( substr($item['avatar'],0,4) != 'http'  && $item['avatar'] != ''){
+                $item['avatar'] = IMG.$item['avatar'];
+            }
+            if ( $item['ctime'] > strtotime(date("Y-m-d"),time()) ){
+                $item['new'] = '1';
+            }else{
+                $item['new'] = '0';
+            }
+            return $item;
+        });
+        if (sizeof($users) > 0){
+            $this->success('成功',$users,'0');
+        }else{
+            $this->success('无下级达标人员','','1');
         }
     }
 }

@@ -27,8 +27,6 @@ use app\common\controller\Redis;
      * 绑定中断测试密文:
      * 心跳连接测试密文:{"one":"ju/bGJTSBMREffM/ypbZ4cw5Vkj5NYn728dyUEsvCp2CMojQh7sNnl7Nmkeg9C9hA8SWRIuLcLQT3ytHRfnyCA==","two":"CPNXbrYGzpEywjANkAMa+A==","three":"863445f5d19b818139afde4195f87ad3d7a96759"}
      * */
-
-
 class Dposapi extends Api
 {
     protected $noNeedLogin = ['*'];
@@ -67,44 +65,43 @@ class Dposapi extends Api
             }
             if ($new['agentNo'] == 'yxbhzys01'){ //这是线下模式的代理商号, 不进入系统,线上的是 liguofa
                 return json_encode($return,JSON_UNESCAPED_UNICODE);
-            }elseif($new['agentNo'] == 'liguofa') {
-                $user = AgoodsSn::get(['sn'=>$new['snNo']]);
-                $insert['snNo'] = $new['snNo'];
-                $insert['time'] = strtotime($new['transDate'].$new['transTime']);
-                $insert['ctime'] = time();//记录创建时间
-                $insert['money'] = $new['transAmt'];
-                $insert['u_id'] = $user->ac_id??0;//机具所属用户id
-                $insert['date'] = date('Y-m',$insert['time']);
-                $insert['transDate'] = date('Y-m-d H:i:s',$insert['time']);
-                $insert['agentNo'] = $new['agentNo'];
-                $insert['agentId'] = $new['agentId'];
-                $insert['keyRsp'] = $new['keyRsp'];
-                $insert['cardNo'] = $new['cardNo'];
-                $insert['cardBankName'] = $new['cardBankName'];
-                $insert['transType'] = $new['transType'];
-                $insert['fee'] = $new['fee'];
-                $insert['memName'] = $new['memName'];
-                $insert['memNo'] = $new['memNo'];
-                $insert['posEntry'] = $new['posEntry'];
-                $insert['cardClass'] = $new['cardClass'];
-                @$this->setlog_data(json_encode($new));
-                $ret = Db::name('sn_record')->insertGetId($insert);
-                //3, 返回code
-                if ($ret){
-                    if ($insert['type'] == '2'){//如果不是信用卡,添加一条记录即可,不执行分销操作
-                        return json_encode($return,JSON_UNESCAPED_UNICODE);
-                    }else{
-                        $url = 'http://www.yongshunjinfu.com/api/Asyncapi/trade';
-                        $insert['id'] = $ret;
-                        Async::send($url,$insert);
-                        return json_encode($return,JSON_UNESCAPED_UNICODE);
-                    }
+            }
+            $user = AgoodsSn::get(['sn'=>$new['snNo']]);
+            $insert['snNo'] = $new['snNo'];
+            $insert['time'] = strtotime($new['transDate'].$new['transTime']);
+            $insert['ctime'] = time();//记录创建时间
+            $insert['money'] = $new['transAmt'];
+            $insert['u_id'] = $user->ac_id??0;//机具所属用户id
+            $insert['date'] = date('Y-m',$insert['time']);
+            $insert['transDate'] = date('Y-m-d H:i:s',$insert['time']);
+            $insert['agentNo'] = $new['agentNo'];
+            $insert['agentId'] = $new['agentId'];
+            $insert['keyRsp'] = $new['keyRsp'];
+            $insert['cardNo'] = $new['cardNo'];
+            $insert['cardBankName'] = $new['cardBankName'];
+            $insert['transType'] = $new['transType'];
+            $insert['fee'] = $new['fee'];
+            $insert['memName'] = $new['memName'];
+            $insert['memNo'] = $new['memNo'];
+            $insert['posEntry'] = $new['posEntry'];
+            $insert['cardClass'] = $new['cardClass'];
+            @$this->setlog_data(json_encode($new).'||'.date('Y-m-d H:i:s',time())."\n");
+            $ret = Db::name('sn_record')->insertGetId($insert);
+            //3, 返回code
+            if ($ret){
+                if ($insert['type'] == '2'){//如果不是信用卡,添加一条记录即可,不执行分销操作
+                    return json_encode($return,JSON_UNESCAPED_UNICODE);
                 }else{
-                    $return['resultContent'] = '失败';
-                    $return['resultCode'] = '9999';
-                    @file_put_contents('trade.txt','交易接口调用失败---'.json_encode($dataarr,JSON_UNESCAPED_UNICODE).'||'.date('Y-m-d H:i:s',time())."\n",FILE_APPEND);
+                    $url = 'http://www.yongshunjinfu.com/api/Asyncapi/trade';
+                    $insert['id'] = $ret;
+                    Async::send($url,$insert);
                     return json_encode($return,JSON_UNESCAPED_UNICODE);
                 }
+            }else{
+                $return['resultContent'] = '失败';
+                $return['resultCode'] = '9999';
+                @file_put_contents('trade.txt','交易接口调用失败---'.json_encode($dataarr,JSON_UNESCAPED_UNICODE).'||'.date('Y-m-d H:i:s',time())."\n",FILE_APPEND);
+                return json_encode($return,JSON_UNESCAPED_UNICODE);
             }
         }catch(Exception $exception){
             $return['resultContent'] = '失败';
@@ -152,7 +149,7 @@ class Dposapi extends Api
                 return json_encode($return,JSON_UNESCAPED_UNICODE);
             }
             $new['time'] = time();
-            @$this->setlog_data(json_encode($new));
+            @$this->setlog_data(json_encode($new).'||'.date('Y-m-d H:i:s',time())."\n");
             $ret = Db::name('sn_bind')->insertGetId($new);
             //返回code
             if ($ret){
@@ -182,7 +179,7 @@ class Dposapi extends Api
     private function des()
     {
         $str = file_get_contents('php://input');
-       //if ( strlen($str) > 200 )@file_put_contents('1.txt',$str.'||'.date('Y-m-d H:i:s',time())."\n",FILE_APPEND);
+        //if ( strlen($str) > 200 )@file_put_contents('1.txt',$str.'||'.date('Y-m-d H:i:s',time())."\n",FILE_APPEND);
         if ( strlen($str) > 200 ) $this->setlog($str.'||'.date('Y-m-d H:i:s',time())."\n");
         $arr = json_decode($str,1);
         //1,先对one 进行rsa 解密,获取 randomkey
@@ -197,7 +194,7 @@ class Dposapi extends Api
         $dataarr = explode(',',$data);
         return $dataarr;
     }
-
+    
     private function setlog($str)
     {
         $date = date('Y-m-d',time());

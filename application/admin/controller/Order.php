@@ -106,7 +106,7 @@ class Order extends Backend
                 //直接升级为 v8
                 $this->ups('V8',$orderinfo->u_id);
             }
-            $orderinfo->status = '5';//直接修改状态为已完成就行
+            $orderinfo->status = '3';//直接修改状态为已完成就行
             $orderinfo->save();
             Db::commit();
             $this->success('订单已成功');

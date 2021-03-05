@@ -27,9 +27,9 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form'], function ($, undefin
                         {field: 'id', title: __('Id')},
                         {field: 'u_id', title: __('U_id')},
                         {field: 'money', title: __('Money'), operate:'BETWEEN'},
-                        {field: 'status', title: __('Status'), searchList: {"1":__('Status 1'),"2":__('Status 2')}, formatter: Table.api.formatter.status},
+                        {field: 'status', title: __('Status'), searchList: {"1":__('Status 1'),"2":__('Status 2'),"3":__('Status 3'),"4":__('Status 4')}, formatter: Table.api.formatter.status},
                         {field: 'ctime', title: __('Ctime'), operate:'RANGE', addclass:'datetimerange', formatter: Table.api.formatter.datetime},
-                        {field: 'order_id', title: __('Order_id')},
+                        //{field: 'order_id', title: __('Order_id')},
                         {field: 'auser.mobile', title: __('Auser.mobile')},
                         {field: 'auser.nickName', title: __('Auser.nickname')},
                         {field: 'operate', title: __('Operate'), table: table, events: Table.api.events.operate, formatter: Table.api.formatter.operate}
